@@ -1,10 +1,15 @@
 
 import paho.mqtt.client as mqtt
 import asyncio
+import time
+import json
 
 
 # mqtt client对象
 client = mqtt.Client()
+
+flows_msg = {}
+last_send_time_point = time.time()
 
 try:
     client.connect('192.168.0.100', 30004, 60)
@@ -54,55 +59,54 @@ class YourProtocol:
         self.transport = transport
 
     def datagram_received(self, data, addr):
+        global last_send_time_point
+        global flows_msg
         # 处理数据
         # print(data)
 
-        byte_str = data
-        import struct
         with open('status') as f:
             ok = f.read()
 
+        ok = '1'
         if ok == '1':
-            int_list = struct.unpack('i'*(len(byte_str)//4), byte_str)
-            print(int_list)
-            print('total_loss: ', int_list[0])
-            print('recent_loss: ', int_list[1])
-            print('max_delay: ', int_list[2])
-            print('min_delay: ', int_list[3])
-            print('avg_delay: ', int_list[4])
-            print('avg_speed: ', int_list[5])
-            print('unused: ', int_list[6])
-            print('unused: ', int_list[7])
-            print('-------')
-
             print('开始发送延迟')
+            msg = data.decode('utf-8')
+            payload = json.loads(msg)
+            print(payload)
+            # {'1': {'byte_num': 10152, 'last_min_max_delay_record': 1686383148, 'loss_rate': 536870912, 'max_delay': 129, 'min_delay': 57, 'packet_num': 47, 'sum_delay': 3490}}
+            for key in payload:
+                if flows_msg.get(key):
+                    value = flows_msg[key]
+                    value['byte_num'] += payload[key]['byte_num']
+                    value['loss_rate'] += payload[key]['loss_rate'] # todo 
+                    value['max_delay'] = max(payload[key]['max_delay'], value['max_delay'])
+                    value['min_delay'] = min(payload[key]['min_delay'], value['min_delay'])
+                    value['packet_num'] += payload[key]['packet_num']
+                    value['sum_delay'] += payload[key]['sum_delay']
+                else:
+                    flows_msg[key] = payload[key]
 
-            delay_data = {
-                "delayData": [
-                    {
-                        "insId": 1,
-                        "maxDelay": {int_list[2]},
-                        "minDelay": int_list[3],
-                        "aveDelay": int_list[4], 
-                        "speed": int_list[5] 
-                    }
-                ]
-            }
 
-            import json
-            delay_data_json = json.dumps({
-                "data": [
-                    {
-                        "insId": 1,
-                        "maxDelay": int_list[2],
-                        "minDelay": int_list[3],
-                        "aveDelay": int_list[4], 
-                        "lossRate": -120, 
-                        "throughput": -15,
-                        "speed": int_list[5] 
-                    }
-                ]
-            })
+            if time.time() - last_send_time_point > 2:
+                print('formal send')
+                for key in flows_msg:
+                    v = flows_msg[key]
+                    data_json = json.dumps({
+                        "data": [
+                            {
+                                "insId": int(key),
+                                "maxDelay": v['max_delay'],
+                                "minDelay": v['min_delay'],
+                                "aveDelay": v['sum_delay'] / v['packet_num'],
+                                "lossRate": -1, 
+                                "throughput": v['byte_num'] / (time.time() - last_send_time_point) / 1000, # KBps
+                                "speed": -1
+                            }
+                        ]
+                    })
+                    print('formal', data_json)
 
-            topic = "/evaluation/business/endToEnd"
-            client.publish(topic, delay_data_json)
+                    topic = "/evaluation/business/endToEnd"
+                    client.publish(topic, data_json)
+                last_send_time_point = time.time()
+                flows_msg = {}
