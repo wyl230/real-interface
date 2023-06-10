@@ -39,7 +39,3 @@ class ProcessControl:
                     self.running_receiver_cpps[param.insId].stop()
                 else: 
                     print('error: neither startTime nor stop time!!')
-
-
-
-
