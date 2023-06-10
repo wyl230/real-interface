@@ -14,6 +14,7 @@ from src.udp_listener import udp_listener
 from src.udp_listener import ok
 import src.cpp_process
 import logging, sys
+import src.distribution.distribution_task_functions as func
 
 logging.basicConfig(level=logging.DEBUG,format='%(asctime)s %(levelname)s %(message)s',stream=sys.stdout)
 
@@ -259,9 +260,10 @@ def terminal_config(body: TerminalsConfig):
 
     terminals = [terminal] * 2
 
-    return {
-        "terminals": terminals
-    }
+    # if body.config.locationType == '1':
+    return func.location_config(body.config)
+    # else:
+        # return { "terminals": terminals }
 
 # *生成业务流分布
 
@@ -290,6 +292,7 @@ def terminal_config(body: biz_request):
         }
 
     data = [get_data()] * 2
+    data = func.task_config(body)
     return {
         "code": 1,
         "message": "SUCCESS",
