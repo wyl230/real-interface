@@ -69,7 +69,7 @@ def param_config(request_body: Configuration):
     for param in request_body.param:
         if param.paramName.find('real') != -1:
             real_time = param.paramValue
-        elif param.paramName.find('simu') != -1:
+        elif param.paramName.find('simulationTime') != -1:
             simulation_time = param.paramValue
 
     return {
