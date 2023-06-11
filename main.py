@@ -7,9 +7,6 @@ from src.routes import start_asyncio
 import asyncio
 import threading
 
-# def asyncio_1():
-#     start_asyncio()
-
 if __name__ == "__main__":
 
     with open('status', 'w') as f:

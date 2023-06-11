@@ -19,7 +19,7 @@ class ProcessControl:
         cnt = 0
         for time_point in self.time_points:
             while timer.ms() < time_point + self.real_time - self.simulation_time:
-                if (cnt:=cnt+1) % 500 == 0:
+                if (cnt:=cnt+1) % 1000 == 0:
                     print('system time: ', timer.ms(), 'point: ', time_point, 'real: ', self.real_time, 'simulation:', self.simulation_time)
                 time.sleep(0.001) 
 
@@ -42,3 +42,4 @@ class ProcessControl:
                     self.running_receiver_cpps[param.insId].stop()
                 else: 
                     print('error: neither startTime nor stop time!!')
+        print('所有业务流发送完毕')

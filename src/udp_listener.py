@@ -147,7 +147,7 @@ class YourProtocol:
                                 "maxDelay": v['max_delay'],
                                 "minDelay": v['min_delay'],
                                 "aveDelay": v['sum_delay'] / v['packet_num'],
-                                "lossRate": current_total_packet_num / (current_max_packet_id + 1), 
+                                "lossRate": 1 - current_total_packet_num / (current_max_packet_id + 1), 
                                 "throughput": v['byte_num'] / (time.time() - last_send_time_point) / 1000, # KBps
                                 "speed": -1
                             }

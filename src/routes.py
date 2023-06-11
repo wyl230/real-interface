@@ -6,7 +6,7 @@ import json
 import change_json
 import paho.mqtt.client as mqtt
 import requests
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 from pydantic.main import BaseModel
 from typing import List
 import asyncio
@@ -69,7 +69,7 @@ def param_config(request_body: Configuration):
     for param in request_body.param:
         if param.paramName.find('real') != -1:
             real_time = param.paramValue
-        elif param.paramName.find('simulationTime') != -1:
+        elif param.paramName.find('simu') != -1:
             simulation_time = param.paramValue
 
     return {
@@ -303,8 +303,13 @@ def terminal_config(body: biz_request):
 
 import threading
 
-@router.post("/process_control")
-def process_control():
+
+@router.post('/submit-task/')
+async def submit_task(background_tasks: BackgroundTasks):
+    background_tasks.add_task(long_running_task)
+    return {"message": "Task submitted to run in the background."}
+
+def long_running_task():
     global real_time, simulation_time
     global current_cpp_id
     global mmap, time_points
@@ -319,8 +324,14 @@ def process_control():
     process_control_a = ProcessControl(time_points, real_time, simulation_time, mmap)
     process_control_a.start()
 
+@router.post("/process_control")
+async def process_control(background_tasks: BackgroundTasks):
+    background_tasks.add_task(long_running_task)
     return {'process control': 'running'}
 
 @router.post("/other_config")
-def other_config():
-    pass
+async def b():
+    # @router.get("/b")
+    # loop = asyncio.get_event_loop()
+    # result = await loop.run_in_executor(None, sleep_print, 2)
+    return {"message": "线程池中运行sleep函数"}
