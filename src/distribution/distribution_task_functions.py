@@ -2,7 +2,6 @@
 # 输入输出参数采取json字符串格式
 import json
 import math
-import scipy
 import numpy as np
 import random
 from functools import reduce
