@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.DEBUG,format='%(asctime)s %(levelname)s %(mess
 
 start_send_delay_ok = False
 forbidden_ids_lock = threading.Lock()
-forbidden_ids = {}
+forbidden_ids = set()
 
 def start_send_delay():
     global start_send_delay_ok
