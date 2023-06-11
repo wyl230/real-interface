@@ -31,12 +31,12 @@ class ProcessControl:
                     self.running_sender_cpps[param.insId] = src.cpp_process.CppProcess('sender', param.insId)
                     self.running_sender_cpps[param.insId].start(['seu-ue-svc'])
                     # receiver
-                    self.running_receiver_cpps[param.insId] = src.cpp_process.CppProcess('receiver', param.insId)
-                    try:
-                        self.running_receiver_cpps[param.insId].start(["192.168.0.181", "pku-control-svc"])
-                    except:
-                        print('running locally!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-                        self.running_receiver_cpps[param.insId].start(["0.0.0.0", "0.0.0.0"])
+                    # self.running_receiver_cpps[param.insId] = src.cpp_process.CppProcess('receiver', param.insId)
+                    # try:
+                    #     self.running_receiver_cpps[param.insId].start(["192.168.0.181", "pku-control-svc"])
+                    # except:
+                    #     print('running locally!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                    #     self.running_receiver_cpps[param.insId].start(["0.0.0.0", "0.0.0.0"])
                 elif param.endTime == time_point:
                     self.running_sender_cpps[param.insId].stop()
                     self.running_receiver_cpps[param.insId].stop()
