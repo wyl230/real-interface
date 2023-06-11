@@ -39,7 +39,7 @@ class ProcessControl:
                     #     self.running_receiver_cpps[param.insId].start(["0.0.0.0", "0.0.0.0"])
                 elif param.endTime == time_point:
                     self.running_sender_cpps[param.insId].stop()
-                    self.running_receiver_cpps[param.insId].stop()
+                    # self.running_receiver_cpps[param.insId].stop()
                 else: 
                     print('error: neither startTime nor stop time!!')
         print('所有业务流发送完毕')
