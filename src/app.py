@@ -25,7 +25,8 @@ def consume_topic():
     except: 
         while True:
             try:
-                client.connect('broker.emqx.io', 1883, 60)
+                # client.connect('broker.emqx.io', 1883, 60)
+                client.connect('162.105.85.167', 1883, 60)
                 break
             except:
                 print('retrying to connect broker.emqx.io ....')
