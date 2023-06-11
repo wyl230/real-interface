@@ -15,10 +15,13 @@ from src.udp_listener import ok
 import src.cpp_process
 import logging, sys
 import src.distribution.distribution_task_functions as func
+import threading
 
 logging.basicConfig(level=logging.DEBUG,format='%(asctime)s %(levelname)s %(message)s',stream=sys.stdout)
 
 start_send_delay_ok = False
+forbidden_ids_lock = threading.Lock()
+forbidden_ids = {}
 
 def start_send_delay():
     global start_send_delay_ok
@@ -134,16 +137,16 @@ current_cpp_id = 0
 running_sender_cpps = {}
 running_receiver_cpps = {}
 
+class single_id(BaseModel):
+    insId: int
+
 @router.post('/simulation/stopStream')
-def stopStream():
-    global current_cpp_id
-
-    current_cpp_id -= 1
-    running_sender_cpps[current_cpp_id].stop()
-    running_sender_cpps.pop(current_cpp_id)
-
-    with open('status', 'w') as f:
-        f.write('0')
+def stopStream(body: single_id):
+    global forbidden_ids, forbidden_ids_lock
+    # with open('status', 'w') as f:
+    #     f.write('0')
+    with forbidden_ids_lock:
+        forbidden_ids.add(body.insId)
 
     return {
         "code": 1,
@@ -171,6 +174,7 @@ def load_stream(request_body: LoadStream):
     global start_send_delay_ok
     global ok
     global mmap, time_points
+    global forbidden_ids, forbidden_ids_lock
     success = True
     code = 1 if success else 0
     message = 'SUCCESS' if success else '失败原因'
@@ -180,6 +184,8 @@ def load_stream(request_body: LoadStream):
         mmap.add(param.endTime, param)
         time_points.append(param.endTime)
         time_points.append(param.startTime)
+        with forbidden_ids_lock:
+            forbidden_ids.remove(param.insId)
 
     headers = { "Content-Type": "application/json; charset=UTF-8", }
     requests.post("http://127.0.0.1:5001/process_control", headers=headers, verify=False, data={})
@@ -312,7 +318,6 @@ async def submit_task(background_tasks: BackgroundTasks):
 
 def long_running_task():
     global real_time, simulation_time
-    global current_cpp_id
     global mmap, time_points
     if real_time == 0:
         logging.error('param config first!!!')
@@ -324,6 +329,8 @@ def long_running_task():
     from src.process_control import ProcessControl 
     process_control_a = ProcessControl(time_points, real_time, simulation_time, mmap)
     process_control_a.start()
+    time_points = []
+    mmap = Multimap()
 
 @router.post("/process_control")
 async def process_control(background_tasks: BackgroundTasks):

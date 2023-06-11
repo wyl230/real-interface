@@ -16,6 +16,10 @@ class ProcessControl:
         self.running_receiver_cpps = {}
 
     def start(self):
+        global forbidden_ids, forbidden_ids_lock
+        forbid = {}
+        with forbidden_ids_lock:
+            forbid = forbidden_ids
         cnt = 0
         for time_point in self.time_points:
             while timer.ms() < time_point + self.real_time - self.simulation_time:
@@ -25,6 +29,8 @@ class ProcessControl:
 
             for param in self.mmap.get(time_point):
                 # sender 
+                if param.insId in forbid:
+                    continue
                 if param.startTime == time_point:
                     change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType))
                     # sender
