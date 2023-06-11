@@ -17,11 +17,11 @@ import logging, sys
 import src.distribution.distribution_task_functions as func
 import threading
 
+from src.process_control import ProcessControl 
+from src.process_control import forbidden_ids_lock, forbidden_ids
 logging.basicConfig(level=logging.DEBUG,format='%(asctime)s %(levelname)s %(message)s',stream=sys.stdout)
 
 start_send_delay_ok = False
-forbidden_ids_lock = threading.Lock()
-forbidden_ids = set()
 
 def start_send_delay():
     global start_send_delay_ok
@@ -327,7 +327,6 @@ def long_running_task():
     time_points.sort()
     logging.info('time_points: ' + str(time_points))
 
-    from src.process_control import ProcessControl 
     process_control_a = ProcessControl(time_points, real_time, simulation_time, mmap)
     process_control_a.start()
     time_points = []

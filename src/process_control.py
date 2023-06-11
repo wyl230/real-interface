@@ -3,8 +3,12 @@ import src.timer as timer
 import change_json
 import src.cpp_process
 import logging, sys
+import threading
 
 logging.basicConfig(level=logging.DEBUG,format='%(asctime)s %(levelname)s %(message)s',stream=sys.stdout)
+
+forbidden_ids_lock = threading.Lock()
+forbidden_ids = set()
 
 class ProcessControl:
     def __init__(self, time_points, real_time, simulation_time, mmap):

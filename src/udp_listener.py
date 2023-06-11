@@ -3,6 +3,7 @@ import paho.mqtt.client as mqtt
 import asyncio
 import time
 import json
+import threading
 
 # speed
 
@@ -14,6 +15,8 @@ packet_counting = {}
 last_send_time_point = time.time()
 total_bytes = 0
 packet_result = {}
+
+total_formal_cnt = 0
 
 try:
     client.connect('192.168.0.100', 30004, 60)
@@ -69,6 +72,7 @@ class YourProtocol:
         global flows_msg
         global packet_counting
         global total_bytes, packet_result
+        global total_formal_cnt
         # 处理数据
         # print(data)
 
@@ -132,7 +136,12 @@ class YourProtocol:
 
 
             if time.time() - last_send_time_point > 2:
-                print('formal send')
+                print(f'formal send {(total_formal_cnt := total_formal_cnt + 1)}')
+                if total_formal_cnt % 20 == 0:
+                    try:
+                        client.connect('192.168.0.100', 30004, 60)
+                    except:
+                        client.connect('162.105.85.167', 1883, 60)
                 for insId in flows_msg:
                     # 丢包率检查
                     print('packet_result', packet_result)
