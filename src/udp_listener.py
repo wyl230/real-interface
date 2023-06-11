@@ -1,4 +1,4 @@
-
+# 效能评估信息的处理发送
 import paho.mqtt.client as mqtt
 import asyncio
 import time

@@ -11,7 +11,7 @@ from pydantic.main import BaseModel
 from typing import List
 import asyncio
 from src.udp_listener import udp_listener
-from src.udp_listener import ok
+from src.udp_listener import ok, packet_result
 import src.cpp_process
 import logging, sys
 import src.distribution.distribution_task_functions as func
@@ -175,6 +175,8 @@ def load_stream(request_body: LoadStream):
     global ok
     global mmap, time_points
     global forbidden_ids, forbidden_ids_lock
+    global packet_result
+    packet_result = {}
     success = True
     code = 1 if success else 0
     message = 'SUCCESS' if success else '失败原因'

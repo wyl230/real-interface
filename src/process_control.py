@@ -10,6 +10,8 @@ logging.basicConfig(level=logging.DEBUG,format='%(asctime)s %(levelname)s %(mess
 forbidden_ids_lock = threading.Lock()
 forbidden_ids = set()
 
+packet_start_id = {}
+
 class ProcessControl:
     def __init__(self, time_points, real_time, simulation_time, mmap):
         self.time_points = time_points
@@ -21,6 +23,7 @@ class ProcessControl:
 
     def start(self):
         global forbidden_ids, forbidden_ids_lock
+        global packet_start_id
         forbid = {}
         with forbidden_ids_lock:
             forbid = forbidden_ids
@@ -39,7 +42,11 @@ class ProcessControl:
                     change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType))
                     # sender
                     self.running_sender_cpps[param.insId] = src.cpp_process.CppProcess('sender', param.insId)
-                    self.running_sender_cpps[param.insId].start(['seu-ue-svc'])
+                    if param.insId in packet_start_id:
+                        self.running_sender_cpps[param.insId].start(['seu-ue-svc', str(packet_start_id[param.insId])])
+                    else: 
+                        self.running_sender_cpps[param.insId].start(['seu-ue-svc', '0'])
+                        packet_start_id[param.insId] = 1
                     # receiver
                     # self.running_receiver_cpps[param.insId] = src.cpp_process.CppProcess('receiver', param.insId)
                     # try:
