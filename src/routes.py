@@ -150,7 +150,7 @@ def stopStream(body: single_id):
 
     return {
         "code": 1,
-        "message": "SUCCESS + invalid interface",
+        "message": "SUCCESS",
         "data": None
     }
 
@@ -185,7 +185,8 @@ def load_stream(request_body: LoadStream):
         time_points.append(param.endTime)
         time_points.append(param.startTime)
         with forbidden_ids_lock:
-            forbidden_ids.remove(param.insId)
+            if int(param.insId) in forbidden_ids:
+                forbidden_ids.remove(param.insId)
 
     headers = { "Content-Type": "application/json; charset=UTF-8", }
     requests.post("http://127.0.0.1:5001/process_control", headers=headers, verify=False, data={})
