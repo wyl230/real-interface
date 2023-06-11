@@ -19,8 +19,11 @@ def location_config(location_par):
     loc_config_res = []
     # 维护id变量
     ue_id = [0]
+    print('par list:', par_list)
     for par in par_list:
+        print('par', par)
         # 中心点经纬度
+
         center_longitude = par.longitude
         center_latitude = par.latitude
         # 区域半径（单位默认为km）
@@ -43,7 +46,7 @@ def location_config(location_par):
                 distribution_result = uniform_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype)
     
     # loc_config_res = json.dumps(loc_config_res, ensure_ascii=False)
-    return loc_config_res
+    return {"terminals": loc_config_res }
 
 # 均匀分布函数
 def uniform_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype):

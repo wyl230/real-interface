@@ -261,6 +261,7 @@ def terminal_config(body: TerminalsConfig):
     terminals = [terminal] * 2
 
     # if body.config.locationType == '1':
+    print('body config', body.config)
     return func.location_config(body.config)
     # else:
         # return { "terminals": terminals }

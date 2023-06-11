@@ -8,7 +8,7 @@ json_string = '''
     {
       "totalNums": 200,
       "terminalType":"1",
-      "locationType": "1",
+      "locationType": "2",
       "modelType": "1",
       "model": "1",
       "longitude": 123.32,
@@ -18,7 +18,7 @@ json_string = '''
     {
       "totalNums": 200,
       "terminalType":"1",
-      "locationType": "1",
+      "locationType": "2",
       "modelType": "1",
       "model": "1",
       "longitude": 123.32,
@@ -28,12 +28,15 @@ json_string = '''
 ]
 '''
 
+json_string = ''' [ { "totalNums":10, "terminalType":"车载终端", "locationType":1, "modelType":2, "model":1, "longitude":"116", "latitude":"40", "range":"50" } ] '''
+
 # data = json.loads(json_string)
 # print(data)
 
 
 # 输出 JSON 字符串
 # print(json_output)
+json_string = json.loads(json_string)
 
 ans = func.location_config(json_string)
 # print(ans)
