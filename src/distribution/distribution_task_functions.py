@@ -38,12 +38,24 @@ def location_config(location_par):
         model_type = par.modelType
         # 分布类型
         distribution_type = par.model
+        # 1 确定性分布：
+        # 1 使领馆分布 2 省会城市分布
 
+        # 2 区域随机分布：
+        # 1 单中心集中分布
+        # 2 多中心集中分布
+        # 3 多中心随机分布
+        # 4 均匀分布
         # 生成用户分布
-        if model_type == '1':
+        if model_type == '2':
             if distribution_type == '1':
                 distribution_result = uniform_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype)
-    
+            elif distribution_type == '2':
+                distribution_result = uniform_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype)
+            elif distribution_type == '3':
+                distribution_result = uniform_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype)
+            elif distribution_type == '4':
+                distribution_result = uniform_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype)
     # loc_config_res = json.dumps(loc_config_res, ensure_ascii=False)
     return {"terminals": loc_config_res }
 
