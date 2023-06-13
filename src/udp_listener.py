@@ -155,11 +155,11 @@ class YourProtocol:
                         "data": [
                             {
                                 "insId": int(insId),
-                                "maxDelay": v['max_delay'],
-                                "minDelay": v['min_delay'],
+                                "maxDelay": round(v['max_delay'] / 1000, 2),
+                                "minDelay": round(v['min_delay'] / 1000, 2),
                                 "aveDelay": v['sum_delay'] / v['packet_num'],
-                                "lossRate": 1 - current_total_packet_num / (current_max_packet_id + 1), 
-                                "throughput": v['byte_num'] / (time.time() - last_send_time_point) / 1000, # KBps
+                                "lossRate": (1 - current_total_packet_num / (current_max_packet_id + 1)) * 100, 
+                                "throughput": v['byte_num'] / (time.time() - last_send_time_point) / 1000 * 8, # kbps
                                 "speed": -1
                             }
                         ]
