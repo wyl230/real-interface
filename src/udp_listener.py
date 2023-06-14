@@ -7,6 +7,9 @@ import threading
 
 # speed
 
+import logging
+import sys
+logging.basicConfig(level=logging.DEBUG,format='%(asctime)s [%(levelname)s] %(message)s',stream=sys.stdout)
 # mqtt client对象
 client = mqtt.Client()
 
@@ -99,7 +102,8 @@ class YourProtocol:
             print('开始发送延迟')
             msg = data.decode('utf-8')
             payload = json.loads(msg) # 一个pod的传输信息
-            print(time.time(), payload)
+            # print(time.time(), payload)
+            logging.debug(f'{time.time()} {payload}')
             # {'1': {'byte_num': 10152, 'last_min_max_delay_record': 1686383148, 'loss_rate': 536870912, 'max_delay': 129, 'min_delay': 57, 'packet_num': 47, 'sum_delay': 3490}}
             for insId in payload: # key = 业务流id
                 if flows_msg.get(insId):
@@ -164,7 +168,7 @@ class YourProtocol:
                 data_dict = []
                 for insId in flows_msg:
                     # 丢包率检查
-                    print('packet_result', packet_result)
+                    logging.debug(f'packet_result: {packet_result}')
                     current_total_packet_num = sum([packet_result[insId][pod_id][0] for pod_id in packet_result[insId]])
                     current_max_packet_id = max([packet_result[insId][pod_id][1] for pod_id in packet_result[insId]])
                     # end
@@ -176,10 +180,10 @@ class YourProtocol:
                             "insId": int(insId),
                             "maxDelay": round(v['max_delay'] / 1000, 2),
                             "minDelay": round(v['min_delay'] / 1000, 2),
-                            "aveDelay": v['sum_delay'] / v['packet_num'],
+                            "aveDelay": round(v['sum_delay'] / v['packet_num'] / 1000, 2),
                             "lossRate": cal_loss_rate(flows_msg, insId),
                             "lossRate_old": round((1 - current_total_packet_num / (current_max_packet_id + 1)) * 100, 2), 
-                            "throughput": v['byte_num'] / (time.time() - last_send_time_point) / 1000, # kB/s
+                            "throughput": round(v['byte_num'] / (time.time() - last_send_time_point) / 1000, 2), # kB/s
                             "speed": -1
                         }
                     ]
@@ -187,7 +191,9 @@ class YourProtocol:
                 data_json = json.dumps({
                     "data": data_dict
                 })
-                print('formal', time.time(), data_json, 'total bytes', total_bytes)
+                # print('formal', time.time(), data_json, 'total bytes', total_bytes)
+
+                logging.info(f'formal send: {time.time()} {data_json}, total bytes: {total_bytes}')
                 topic = "/evaluation/business/endToEnd"
                 client.publish(topic, data_json)
 
