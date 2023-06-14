@@ -63,6 +63,21 @@ def get_ok():
     global ok
     return ok
 
+
+def cal_loss_rate(flows_msg, ins_id):
+    id_list = flows_msg[ins_id]['id_list']
+    id_list = sorted(list(set(id_list))) # 去重并排序
+
+    count = 0
+
+    for i in range(1, len(id_list)):
+        if id_list[i] <= id_list[i-1]:
+            count += (id_list[i] - id_list[i-1] - 1)
+    
+    return round(count / len(id_list), 2)
+
+
+
 class YourProtocol:
     def connection_made(self, transport):
         self.transport = transport
@@ -96,6 +111,10 @@ class YourProtocol:
                     value['packet_num'] += payload[insId]['packet_num']
                     value['sum_delay'] += payload[insId]['sum_delay']
                     total_bytes += payload[insId]['byte_num']
+                    try: 
+                        value['id_list'] += payload[insId]['id_list']
+                    except:
+                        value['id_list'] = payload[insId]['id_list']
                 else:
                     flows_msg[insId] = payload[insId]
 
@@ -142,6 +161,7 @@ class YourProtocol:
                         client.connect('192.168.0.100', 30004, 60)
                     except:
                         client.connect('162.105.85.167', 1883, 60)
+                data_dict = []
                 for insId in flows_msg:
                     # 丢包率检查
                     print('packet_result', packet_result)
@@ -151,22 +171,25 @@ class YourProtocol:
                     # id = flows_msg[insId]['pod_id']
                     # total_packet_num_for_each_flow += packet_counting[id][0]
                     v = flows_msg[insId]
-                    data_json = json.dumps({
-                        "data": [
-                            {
-                                "insId": int(insId),
-                                "maxDelay": round(v['max_delay'] / 1000, 2),
-                                "minDelay": round(v['min_delay'] / 1000, 2),
-                                "aveDelay": v['sum_delay'] / v['packet_num'],
-                                "lossRate": (1 - current_total_packet_num / (current_max_packet_id + 1)) * 100, 
-                                "throughput": v['byte_num'] / (time.time() - last_send_time_point) / 1000 * 8, # kbps
-                                "speed": -1
-                            }
-                        ]
-                    })
-                    print('formal', time.time(), data_json, 'total bytes', total_bytes)
+                    data_dict += [
+                        {
+                            "insId": int(insId),
+                            "maxDelay": round(v['max_delay'] / 1000, 2),
+                            "minDelay": round(v['min_delay'] / 1000, 2),
+                            "aveDelay": v['sum_delay'] / v['packet_num'],
+                            "lossRate": cal_loss_rate(flows_msg, insId),
+                            "lossRate_old": round((1 - current_total_packet_num / (current_max_packet_id + 1)) * 100, 2), 
+                            "throughput": v['byte_num'] / (time.time() - last_send_time_point) / 1000, # kB/s
+                            "speed": -1
+                        }
+                    ]
 
-                    topic = "/evaluation/business/endToEnd"
-                    client.publish(topic, data_json)
+                data_json = json.dumps({
+                    "data": data_dict
+                })
+                print('formal', time.time(), data_json, 'total bytes', total_bytes)
+                topic = "/evaluation/business/endToEnd"
+                client.publish(topic, data_json)
+
                 last_send_time_point = time.time()
                 flows_msg = {}

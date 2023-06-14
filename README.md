@@ -1,3 +1,7 @@
+todo:
+- mqtt消息连接测试：修改保持时间，或者减少重连时间
+- 丢包率，修改receiver
+
 注意：视频流或音频流，业务id设置成23023
 
 
@@ -9,7 +13,7 @@
 东北系统发来的请求用curl工具代替测试，
 东北系统发来的mqtt请求用mosquitto_pub工具代替测试， -->
 
-业务流启动测试 
+<!-- 业务流启动测试 
 
 
 2、接口定义：
@@ -145,4 +149,4 @@ curl -X POST -H "Content-Type: application/json" -d '{ "param": [{ "insId": 1, "
    "bizType": "1"
   }
  ]
-}
+} -->
