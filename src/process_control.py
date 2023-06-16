@@ -37,7 +37,11 @@ class ProcessControl:
             for param in self.mmap.get(time_point):
                 # sender 
                 if param.insId in forbid:
+                    logging.debug(f'forbidden id: {param.insId}')
                     continue
+                
+                logging.debug(f'start time: {param.startTime}, time point: {time_point}')
+                logging.debug(f'end time: {param.endTime}, time point: {time_point}')
                 if param.startTime == time_point:
                     change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType))
                     # sender
@@ -47,13 +51,7 @@ class ProcessControl:
                     else: 
                         self.running_sender_cpps[param.insId].start(['seu-ue-svc', '0'])
                         packet_start_id[param.insId] = 1
-                    # receiver
-                    # self.running_receiver_cpps[param.insId] = src.cpp_process.CppProcess('receiver', param.insId)
-                    # try:
-                    #     self.running_receiver_cpps[param.insId].start(["192.168.0.181", "pku-control-svc"])
-                    # except:
-                    #     print('running locally!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-                    #     self.running_receiver_cpps[param.insId].start(["0.0.0.0", "0.0.0.0"])
+                    logging.debug('6')
                 elif param.endTime == time_point:
                     self.running_sender_cpps[param.insId].stop()
                     # self.running_receiver_cpps[param.insId].stop()

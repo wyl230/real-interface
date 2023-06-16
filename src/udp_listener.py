@@ -22,12 +22,12 @@ packet_result = {}
 total_formal_cnt = 0
 
 try:
-    client.connect('192.168.0.100', 30004, 60)
+    client.connect('192.168.0.100', 30004, 600)
 except:
     while True:
         try:
             # client.connect('broker.emqx.io', 1883, 60)
-            client.connect('162.105.85.167', 1883, 60)
+            client.connect('162.105.85.167', 1883, 600)
             
             break
         except:
@@ -69,7 +69,12 @@ def get_ok():
 
 def cal_loss_rate(flows_msg, ins_id):
     id_list = flows_msg[ins_id]['id_list']
-    id_list = sorted(list(set(id_list))) # 去重并排序
+    try:
+        id_list = sorted(list(set(id_list))) # 去重并排序
+        print('id list, rignt', id_list)
+    except:
+        print(id_list, 'error')
+        return round(0, 2)
 
     count = 0
 
@@ -104,11 +109,15 @@ class YourProtocol:
             payload = json.loads(msg) # 一个pod的传输信息
             # print(time.time(), payload)
             logging.debug(f'{time.time()} {payload}')
-            # {'1': {'byte_num': 10152, 'last_min_max_delay_record': 1686383148, 'loss_rate': 536870912, 'max_delay': 129, 'min_delay': 57, 'packet_num': 47, 'sum_delay': 3490}}
+            # 1686895530.5503228 {'1': {'byte_num': 6936, 'id_list': [4265, 4266, 4267, 4268, 4269, 4270, 4271, 4272, 4273, 4274, 4275, 4276, 4277, 4278, 4279, 4280, 4281, 4282, 4283, 4284, 4285], 'last_min_max_delay_record': 1686895530, 'loss_rate': 0, 'max_delay': 141, 'max_packet_id': 4285, 'min_delay': 85, 'packet_num': 43, 'pod_id': '{}p[VOjCj%%"):DuBIOkAy^,X/)4[ZQdY9tN\\N^BLX6nG*==mAw[3p"!x%&OxP"p', 'sum_delay': 4457, 'total_packet_num': 43},
+            # '2': {'byte_num': 1496, 'id_list': [2, 3, 1, 2], 'last_min_max_delay_record': 1686895298, 'loss_rate': 0, 'max_delay': 279, 'max_packet_id': 3, 'min_delay': 121, 'packet_num': 9, 'pod_id': '{}p[VOjCj%%"):DuBIOkAy^,X/)4[ZQdY9tN\\N^BLX6nG*==mAw[3p"!x%&OxP"p', 'sum_delay': 1562, 'total_packet_num': 9}, 
             for insId in payload: # key = 业务流id
                 if flows_msg.get(insId):
                     value = flows_msg[insId]
-                    value['byte_num'] += payload[insId]['byte_num']
+                    pod_id = payload[insId]['pod_id']
+                    if pod_id not in value:
+                        value[pod_id] = {}
+                    value[pod_id]['byte_num'] = payload[insId]['byte_num']
                     value['loss_rate'] += payload[insId]['loss_rate'] # todo 
                     value['max_delay'] = max(payload[insId]['max_delay'], value['max_delay'])
                     value['min_delay'] = min(payload[insId]['min_delay'], value['min_delay'])
@@ -162,19 +171,26 @@ class YourProtocol:
                 print(f'formal send {(total_formal_cnt := total_formal_cnt + 1)}')
                 if total_formal_cnt % 20 == 0:
                     try:
-                        client.connect('192.168.0.100', 30004, 60)
+                        client.connect('192.168.0.100', 30004, 600)
                     except:
-                        client.connect('162.105.85.167', 1883, 60)
+                        client.connect('162.105.85.167', 1883, 600)
                 data_dict = []
                 for insId in flows_msg:
                     # 丢包率检查
-                    logging.debug(f'packet_result: {packet_result}')
+                    # logging.debug(f'packet_result: {packet_result}')
                     current_total_packet_num = sum([packet_result[insId][pod_id][0] for pod_id in packet_result[insId]])
                     current_max_packet_id = max([packet_result[insId][pod_id][1] for pod_id in packet_result[insId]])
                     # end
                     # id = flows_msg[insId]['pod_id']
                     # total_packet_num_for_each_flow += packet_counting[id][0]
                     v = flows_msg[insId]
+                    def cal_through_out(v):
+                        print('fff', v)
+                        byte_num = 0
+                        for pod_id in filter(lambda x: len(x) > 50, v):
+                            byte_num += v[pod_id]['byte_num']
+
+                        return round(byte_num / 1 / 1024, 2)
                     data_dict += [
                         {
                             "insId": int(insId),
@@ -183,7 +199,9 @@ class YourProtocol:
                             "aveDelay": round(v['sum_delay'] / v['packet_num'] / 1000, 2),
                             "lossRate": cal_loss_rate(flows_msg, insId),
                             "lossRate_old": round((1 - current_total_packet_num / (current_max_packet_id + 1)) * 100, 2), 
-                            "throughput": round(v['byte_num'] / (time.time() - last_send_time_point) / 1000, 2), # kB/s
+                            # "throughput": round(v['byte_num'] / 2 / 1024, 2), # kB/s
+                            "throughput": cal_through_out(v), # kB/s
+                            # "throughput": round(v['byte_num'] / (time.time() - last_send_time_point) / 1000, 2), # kB/s
                             "speed": -1
                         }
                     ]

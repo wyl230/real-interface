@@ -329,7 +329,7 @@ def long_running_task():
     time_points.sort()
     logging.info('time_points: ' + str(time_points))
 
-    process_control_a = ProcessControl(time_points, real_time, simulation_time, mmap)
+    process_control_a = ProcessControl(time_points[:], real_time, simulation_time, mmap)
     process_control_a.start()
     time_points = []
     mmap = Multimap()
