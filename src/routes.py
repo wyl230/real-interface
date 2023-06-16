@@ -1,5 +1,6 @@
 # http接口定义
 
+import heapq
 import time
 import src.timer as timer
 import json
@@ -52,6 +53,7 @@ except:
 
 # round(time.time() * 1000)
 
+process_control_init = False
 real_time = 0
 simulation_time = 0
 class Param(BaseModel):
@@ -64,6 +66,7 @@ class Configuration(BaseModel):
 
 @router.post("/xw/param/config")
 def param_config(request_body: Configuration):
+    global process_control_init
     global real_time, simulation_time
     # return "param is " + str(request_body.param) # 测试是否收到并解析request
     success = True
@@ -73,8 +76,14 @@ def param_config(request_body: Configuration):
     for param in request_body.param:
         if param.paramName.find('real') != -1:
             real_time = param.paramValue
-        elif param.paramName.find('simu') != -1:
+        elif param.paramName.find('simulationTime') != -1:
             simulation_time = param.paramValue
+
+    # 启动任务管理
+    if not process_control_init:
+        process_control_init = True
+        headers = { "Content-Type": "application/json; charset=UTF-8", }
+        requests.post("http://127.0.0.1:5001/process_control", headers=headers, verify=False, data={})
 
     return {
         "code": code,
@@ -148,6 +157,8 @@ def stopStream(body: single_id):
     with forbidden_ids_lock:
         forbidden_ids.add(body.insId)
 
+    # todo 删除对应的time_point中的mmap映射的param，同时停止进程
+
     return {
         "code": 1,
         "message": "SUCCESS",
@@ -169,6 +180,12 @@ from src.multimap import Multimap
 time_points = []
 mmap = Multimap()
 
+mutex = threading.Lock() 
+cv = threading.Condition(mutex) 
+
+mmap_mutex = threading.Lock() 
+mmap_cv = threading.Condition(mmap_mutex) 
+
 @router.post("/simulation/loadStream")
 def load_stream(request_body: LoadStream):
     global start_send_delay_ok
@@ -184,14 +201,15 @@ def load_stream(request_body: LoadStream):
     for param in request_body.param:
         mmap.add(param.startTime, param)
         mmap.add(param.endTime, param)
-        time_points.append(param.endTime)
-        time_points.append(param.startTime)
+        with cv:
+            heapq.heappush(time_points, param.endTime)
+            heapq.heappush(time_points, param.startTime)
+            logging.info(f'添加了时间 s: {param.startTime}, e: {param.endTime}')
+            cv.notify_all()
         with forbidden_ids_lock:
             if int(param.insId) in forbidden_ids:
                 forbidden_ids.remove(param.insId)
 
-    headers = { "Content-Type": "application/json; charset=UTF-8", }
-    requests.post("http://127.0.0.1:5001/process_control", headers=headers, verify=False, data={})
 
     start_send_delay_ok = True
     ok = True
@@ -278,7 +296,6 @@ def terminal_config(body: TerminalsConfig):
 
 # *生成业务流分布
 
-
 # { "composition": [ { "bizType": "1", "weight": 0.3 }, { "bizType": "2", "weight": 0.7 } ], "time": "1", "totalNum": 100, "timeRange": [1679796935000, 1682475335693] }
 
 class single_composition(BaseModel):
@@ -319,6 +336,7 @@ async def submit_task(background_tasks: BackgroundTasks):
     background_tasks.add_task(long_running_task)
     return {"message": "Task submitted to run in the background."}
 
+
 def long_running_task():
     global real_time, simulation_time
     global mmap, time_points
@@ -329,7 +347,7 @@ def long_running_task():
     time_points.sort()
     logging.info('time_points: ' + str(time_points))
 
-    process_control_a = ProcessControl(time_points[:], real_time, simulation_time, mmap)
+    process_control_a = ProcessControl(time_points, real_time, simulation_time, mmap, cv, mmap_mutex)
     process_control_a.start()
     time_points = []
     mmap = Multimap()
