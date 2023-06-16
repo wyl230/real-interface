@@ -158,6 +158,9 @@ def stopStream(body: single_id):
         forbidden_ids.add(body.insId)
 
     # todo 删除对应的time_point中的mmap映射的param，同时停止进程
+    # todo 访问loadstream，及时停止 
+    headers = { "Content-Type": "application/json; charset=UTF-8", }
+    requests.post("http://127.0.0.1:5001/simulation/loadStream", headers=headers, verify=False, data={"param": [ { "insId" : body.insId , "startTime": 0, "endTime": 0, "source": 153, "destination": 283, "bizType": "1"  } ]})
 
     return {
         "code": 1,

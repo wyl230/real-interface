@@ -38,6 +38,7 @@ class ProcessControl:
             # 申请锁并等待
             with self.cv:
                 while not self.time_points: # 都遍历完之后等待添加
+                    print('所有业务流发送完毕')
                     self.cv.wait()
                 time_point = heapq.heappop(self.time_points)
                 logging.info(f'pop time_point {time_point}')
@@ -61,6 +62,9 @@ class ProcessControl:
                         # sender
                         if param.insId in self.running_sender_cpps: # 如果当前业务流正在进行，先停止该业务流
                             self.running_sender_cpps[param.insId].stop()
+                            if time_point == 0: # 停止业务流的特定时间点
+                                logging.info(f'业务流 {param.insId} 停止')
+                                continue
 
                         self.running_sender_cpps[param.insId] = src.cpp_process.CppProcess('sender', param.insId)
                         if param.insId in packet_start_id:
@@ -74,4 +78,3 @@ class ProcessControl:
                         # self.running_receiver_cpps[param.insId].stop()
                     else: 
                         print('error: neither startTime nor stop time!!')
-        print('所有业务流发送完毕')
