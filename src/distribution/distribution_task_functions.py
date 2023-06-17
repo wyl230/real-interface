@@ -114,7 +114,10 @@ def task_config(task_par):
     biz_data = []
     # 生成视频业务配置
     for biz_comp in task_composition:
+        # todo
         if time_type == '1':
+            biz_config(biz_comp, task_num, biz_data, start_time, end_time)
+        if time_type == '2':
             biz_config(biz_comp, task_num, biz_data, start_time, end_time)
 
     # 转化为json字符串输出
