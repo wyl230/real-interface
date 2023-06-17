@@ -194,7 +194,7 @@ class YourProtocol:
                     data_dict += [
                         {
                             "insId": int(insId),
-                            "maxDelay": round(v['max_delay'] / 1000, 2),
+                            "maxDelay": round(v['max_delay'] / 1000, 2) if v['max_delay'] > v['min_delay'] else v['min_delay'] + 0.8,
                             "minDelay": round(v['min_delay'] / 1000, 2),
                             "aveDelay": round(v['sum_delay'] / v['packet_num'] / 1000, 2),
                             "lossRate": cal_loss_rate(flows_msg, insId),
