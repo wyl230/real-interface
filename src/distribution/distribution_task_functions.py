@@ -202,8 +202,8 @@ def multi_flow_biz_config(biz_comp, task_num, biz_data, start_time, end_time):
         # 生成一对收发端id
         source_id, dest_id = id_gen()
         tmpdict = {
-            'startTime': start_time,
-            'endTime': end_time,
+            'startTime': start_time * 1000,
+            'endTime': end_time * 1000,
             'source': source_id,
             'destination': dest_id,
             'bizType': biz_comp.bizType
