@@ -16,6 +16,7 @@ def location_config(location_par):
     par_list = location_par
     # 分布结果
     loc_config_res = []
+    groups_num = []
     # 维护id变量
     ue_id = [0]
     print('par list:', par_list)
