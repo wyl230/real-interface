@@ -138,14 +138,14 @@ def monocentric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_c
             lon_deg[0,i] += 360
         # 将结果编辑为字典添加进distribution_result
         tmp_dict = {
-            #'terminalId': ue_id[0],
-            #'terminalName': '终端_' + str(ue_id[0]),
+            'terminalId': ue_id[0],
+            'terminalName': '终端_' + str(ue_id[0]),
             'terminalType': ue_type,
             'locationType': ue_loctype,
             'longitude': lon_deg[0,i],
             'latitude': lat_deg[0,i]
         }
-        #ue_id[0] += 1
+        ue_id[0] += 1
         loc_config_res.append(tmp_dict)
 
     return lat_deg, lon_deg
