@@ -19,6 +19,8 @@ last_send_time_point = time.time()
 total_bytes = 0
 packet_result = {}
 
+long_time_no_receive = {}
+
 total_formal_cnt = 0
 
 try:
@@ -66,8 +68,19 @@ def get_ok():
     global ok
     return ok
 
+def if_long_time_no_receive(ins_id, cur_receive_packet_id, throughput):
+    cur_send_packet_id = 0
+    with open('packet_id.json') as f:
+        j = json.load(f)
+        cur_send_packet_id = j[str(ins_id)]
 
-def cal_loss_rate(flows_msg, ins_id):
+    threshold = 300 if (throughput - 10) < 5 else 1500 if (throughput - 260) < 50 else 10000
+
+    if cur_send_packet_id - cur_receive_packet_id > threshold:
+        return True
+    return False
+
+def cal_loss_rate(flows_msg, ins_id, throughput):
     id_list = flows_msg[ins_id]['id_list']
     try:
         id_list = sorted(list(set(id_list))) # 去重并排序
@@ -77,6 +90,9 @@ def cal_loss_rate(flows_msg, ins_id):
         return round(0, 2)
 
     count = 0
+
+    # if if_long_time_no_receive(ins_id, id_list[-1], throughput):
+    #     return round(100, 2)
 
     for i in range(1, len(id_list)):
         if id_list[i] <= id_list[i-1]:
@@ -197,8 +213,8 @@ class YourProtocol:
                             "maxDelay": round(v['max_delay'] / 1000, 2) if v['max_delay'] > v['min_delay'] else v['min_delay'] + 0.8,
                             "minDelay": round(v['min_delay'] / 1000, 2),
                             "aveDelay": round(v['sum_delay'] / v['packet_num'] / 1000, 2),
-                            "lossRate": cal_loss_rate(flows_msg, insId),
-                            "lossRate_old": round((1 - current_total_packet_num / (current_max_packet_id + 1)) * 100, 2), 
+                            "lossRate": cal_loss_rate(flows_msg, insId, cal_through_out(v)),
+                            # "lossRate_old": round((1 - current_total_packet_num / (current_max_packet_id + 1)) * 100, 2), 
                             # "throughput": round(v['byte_num'] / 2 / 1024, 2), # kB/s
                             "throughput": cal_through_out(v), # kB/s
                             # "throughput": round(v['byte_num'] / (time.time() - last_send_time_point) / 1000, 2), # kB/s
@@ -216,4 +232,5 @@ class YourProtocol:
                 client.publish(topic, data_json)
 
                 last_send_time_point = time.time()
+                long_time_no_receive = {}
                 flows_msg = {}
