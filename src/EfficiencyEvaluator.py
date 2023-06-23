@@ -22,7 +22,6 @@ long_time_no_receive = {}
 total_formal_cnt = 0
 client = mqtt.Client()
 
-
 ok = False
 
 def run_udp_listener():
@@ -176,12 +175,6 @@ class YourProtocol:
 
     def datagram_received(self, data, addr):
         global last_send_time_point
-        global flows_msg
-        global packet_counting
-        global total_bytes 
-        global total_formal_cnt
-        # 处理数据
-        # print(data)
 
         print('开始发送延迟')
         msg = data.decode('utf-8')
