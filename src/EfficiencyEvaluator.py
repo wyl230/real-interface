@@ -124,6 +124,56 @@ class YourProtocol:
     def connection_made(self, transport):
         self.transport = transport
 
+    def reconnect_mqtt(self):
+        if config.get_local_matt():
+            client.connect('162.105.85.167', 1883, 600)
+        else:
+            client.connect('192.168.0.100', 30004, 600)
+
+    def reinit(self):
+        global last_send_time_point
+        global flows_msg
+        last_send_time_point = time.time()
+        long_time_no_receive = {}
+        flows_msg = {}
+
+    def send_mqtt(self, data_dict):
+        global total_formal_cnt
+        print(f'formal send {(total_formal_cnt := total_formal_cnt + 1)}')
+
+        if total_formal_cnt % 20 == 0:
+            self.reconnect_mqtt()
+
+        data_json = json.dumps({ "data": data_dict })
+        # print('formal', time.time(), data_json, 'total bytes', total_bytes)
+
+        logging.info(f'formal send: {time.time()} {data_json}, total bytes: {total_bytes}')
+        topic = "/evaluation/business/endToEnd"
+        client.publish(topic, data_json)
+
+    def send_message_generate(self):
+        global flows_msg
+
+        data_dict = []
+        for insId in flows_msg:
+            # id = flows_msg[insId]['pod_id']
+            # total_packet_num_for_each_flow += packet_counting[id][0]
+            v = flows_msg[insId]
+            data_dict += [
+                {
+                    "insId": int(insId),
+                    "maxDelay": round(v['max_delay'] / 1000, 2) if v['max_delay'] > v['min_delay'] else v['min_delay'] + 0.8,
+                    "minDelay": round(v['min_delay'] / 1000, 2),
+                    "aveDelay": round(v['sum_delay'] / v['packet_num'] / 1000, 2),
+                    "lossRate": cal_loss_rate(flows_msg, insId, cal_through_out(v)),
+                    # "throughput": round(v['byte_num'] / 2 / 1024, 2), # kB/s
+                    "throughput": cal_through_out(v), # kB/s
+                    # "throughput": round(v['byte_num'] / (time.time() - last_send_time_point) / 1000, 2), # kB/s
+                    "speed": -1
+                }
+            ]
+        return data_dict
+
     def datagram_received(self, data, addr):
         global last_send_time_point
         global flows_msg
@@ -141,41 +191,5 @@ class YourProtocol:
         update_flow_msg(payload)
 
         if time.time() - last_send_time_point > 2:
-            print(f'formal send {(total_formal_cnt := total_formal_cnt + 1)}')
-            if total_formal_cnt % 20 == 0:
-                if config.get_local_matt():
-                    client.connect('162.105.85.167', 1883, 600)
-                else:
-                    client.connect('192.168.0.100', 30004, 600)
-
-            data_dict = []
-            for insId in flows_msg:
-                # id = flows_msg[insId]['pod_id']
-                # total_packet_num_for_each_flow += packet_counting[id][0]
-                v = flows_msg[insId]
-                data_dict += [
-                    {
-                        "insId": int(insId),
-                        "maxDelay": round(v['max_delay'] / 1000, 2) if v['max_delay'] > v['min_delay'] else v['min_delay'] + 0.8,
-                        "minDelay": round(v['min_delay'] / 1000, 2),
-                        "aveDelay": round(v['sum_delay'] / v['packet_num'] / 1000, 2),
-                        "lossRate": cal_loss_rate(flows_msg, insId, cal_through_out(v)),
-                        # "throughput": round(v['byte_num'] / 2 / 1024, 2), # kB/s
-                        "throughput": cal_through_out(v), # kB/s
-                        # "throughput": round(v['byte_num'] / (time.time() - last_send_time_point) / 1000, 2), # kB/s
-                        "speed": -1
-                    }
-                ]
-
-            data_json = json.dumps({
-                "data": data_dict
-            })
-            # print('formal', time.time(), data_json, 'total bytes', total_bytes)
-
-            logging.info(f'formal send: {time.time()} {data_json}, total bytes: {total_bytes}')
-            topic = "/evaluation/business/endToEnd"
-            client.publish(topic, data_json)
-
-            last_send_time_point = time.time()
-            long_time_no_receive = {}
-            flows_msg = {}
+            self.send_mqtt(self.send_message_generate())
+            self.reinit()
