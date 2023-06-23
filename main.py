@@ -10,6 +10,7 @@ import threading
 
 def set_local_mqtt():
     args = sys.argv
+    arg1 = 0
     if len(args) > 1:
         arg1 = int(args[1])
         print('local mqtt')
