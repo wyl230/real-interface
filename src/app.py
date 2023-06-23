@@ -6,6 +6,7 @@ import paho.mqtt.client as mqtt
 from fastapi import FastAPI
 import json
 from . import routes
+import config
 
 api = FastAPI()
 
@@ -20,17 +21,12 @@ def consume_topic():
     client.on_connect = on_connect
     client.on_message = on_message
     # 建立连接
-    try: 
-        client.connect('192.168.0.100', 30004, 60)
-    except: 
-        while True:
-            try:
-                # client.connect('broker.emqx.io', 1883, 60)
-                client.connect('162.105.85.167', 1883, 60)
-                break
-            except:
-                print('retrying to connect broker.emqx.io ....')
-                continue
+
+    if config.get_local_matt():
+        client.connect('162.105.85.167', 1883, 600)
+    else:
+        client.connect('192.168.0.100', 30004, 600)
+
     # 发布消息
     # client.publish(topic='test_w', payload='wwwwwww', qos=0)
     # client.publish(topic='testtopic/1', payload='Hello World11111', qos=0)

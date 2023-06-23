@@ -3,6 +3,7 @@ import paho.mqtt.client as mqtt
 import asyncio
 import time
 import json
+import config
 import threading
 
 # speed
@@ -10,8 +11,6 @@ import threading
 import logging
 import sys
 logging.basicConfig(level=logging.DEBUG,format='%(asctime)s [%(levelname)s] %(message)s',stream=sys.stdout)
-# mqtt client对象
-client = mqtt.Client()
 
 flows_msg = {}
 packet_counting = {}
@@ -22,19 +21,8 @@ packet_result = {}
 long_time_no_receive = {}
 
 total_formal_cnt = 0
+client = mqtt.Client()
 
-try:
-    client.connect('192.168.0.100', 30004, 600)
-except:
-    while True:
-        try:
-            # client.connect('broker.emqx.io', 1883, 60)
-            client.connect('162.105.85.167', 1883, 600)
-            
-            break
-        except:
-            print('retrying to connect broker.emqx.io ....')
-            continue
 
 ok = False
 
@@ -50,6 +38,10 @@ def stop_udp_listener():
 
 async def udp_listener():
     print('udp...')
+    if config.get_local_matt():
+        client.connect('162.105.85.167', 1883, 600)
+    else:
+        client.connect('192.168.0.100', 30004, 600)
     YourPort = 9002
     # 创建UDP连接
     transport, protocol = await asyncio.get_running_loop().create_datagram_endpoint(
@@ -186,10 +178,11 @@ class YourProtocol:
             if time.time() - last_send_time_point > 2:
                 print(f'formal send {(total_formal_cnt := total_formal_cnt + 1)}')
                 if total_formal_cnt % 20 == 0:
-                    try:
-                        client.connect('192.168.0.100', 30004, 600)
-                    except:
+                    if config.get_local_matt():
                         client.connect('162.105.85.167', 1883, 600)
+                    else:
+                        client.connect('192.168.0.100', 30004, 600)
+
                 data_dict = []
                 for insId in flows_msg:
                     # 丢包率检查

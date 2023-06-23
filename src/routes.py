@@ -17,6 +17,7 @@ import src.cpp_process
 import logging, sys
 import src.distribution.distribution_task_functions as func
 import threading
+import config
 
 from src.process_control import ProcessControl 
 from src.process_control import forbidden_ids_lock, forbidden_ids
@@ -30,22 +31,7 @@ def start_send_delay():
 
 router = APIRouter()
 
-# mqtt client对象
-client = mqtt.Client()
-try: 
-    client.connect('192.168.0.100', 30004, 60)
-except:
-    while True:
-        try:
-            # client.connect('broker.emqx.io', 1883, 60)
-            client.connect('162.105.85.167', 1883, 60)
-            break
-        except:
-            print('retrying to connect broker.emqx.io ....')
-            continue
-
 # cpp
-
 # 接口1，参数配置
 # 东北调此系统
 # 本地测试: ok
@@ -116,6 +102,13 @@ class Empty(BaseModel):
 
 # 接口4，初始化时发送mqtt消息
 def on_init_use_mqtt():
+    client = mqtt.Client()
+
+    if config.get_local_matt():
+        client.connect('162.105.85.167', 1883, 600)
+    else:
+        client.connect('192.168.0.100', 30004, 600)
+
     init_message = {
         "moduleCode": "pku",
         "initStatus": "1"
