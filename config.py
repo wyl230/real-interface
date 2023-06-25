@@ -19,5 +19,5 @@ def get_server():
 def set_local_mqtt(local_mqtt):
     global_var.local_mqtt = local_mqtt
 
-def get_local_matt():
+def get_local_mqtt():
     return global_var.local_mqtt

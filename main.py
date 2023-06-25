@@ -1,13 +1,5 @@
-import uvicorn
-import time
 import sys
-from src.routes import start_asyncio
 import config
-
-# 异步接受udp消息
-import asyncio
-import threading
-
 def set_local_mqtt():
     args = sys.argv
     arg1 = 0
@@ -18,9 +10,18 @@ def set_local_mqtt():
         config.set_local_mqtt(True)
     else:
         config.set_local_mqtt(False)
+set_local_mqtt()
+
+import uvicorn
+import time
+from src.routes import start_asyncio
+
+# 异步接受udp消息
+import asyncio
+import threading
+
 
 if __name__ == "__main__":
-    set_local_mqtt()
 
     with open('status', 'w') as f:
         f.write('0')

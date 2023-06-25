@@ -5,6 +5,7 @@ import math
 import numpy as np
 import random
 from functools import reduce
+from src.distribution.distribution_location import centric_distribution
 
 groups_num = []
 
@@ -50,12 +51,16 @@ def location_config(location_par):
         # 生成用户分布
         if model_type == '2':
             if distribution_type == '1':
+                # 1 单中心集中分布
                 distribution_result = monocentric_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype, center_scat=0.1)
             elif distribution_type == '2':
-                distribution_result = uniform_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype)
+                # 2 多中心集中分布
+                distribution_result = centric_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype, center_scat = 0.1, center_num = 3)
             elif distribution_type == '3':
-                distribution_result = uniform_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype)
+                # 3 多中心随机分布
+                distribution_result = centric_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype, center_scat = 0.3, center_num = 3)
             elif distribution_type == '4':
+                # 4 均匀分布
                 distribution_result = uniform_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype)
     # loc_config_res = json.dumps(loc_config_res, ensure_ascii=False)
     return {"terminals": loc_config_res }
@@ -149,8 +154,6 @@ def monocentric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_c
         loc_config_res.append(tmp_dict)
 
     return lat_deg, lon_deg
-
-
 
 def single_center_centralized_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype):
     pass 

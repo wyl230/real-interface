@@ -22,7 +22,7 @@ def consume_topic():
     client.on_message = on_message
     # 建立连接
 
-    if config.get_local_matt():
+    if config.get_local_mqtt():
         client.connect('162.105.85.167', 1883, 600)
     else:
         client.connect('192.168.0.100', 30004, 600)
