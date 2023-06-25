@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.DEBUG,format='%(asctime)s %(levelname)s %(mess
 # logging.critical('critical message')
 
 class CppProcess:
-    def __init__(self, file_name, id):
+    def __init__(self, file_name, id, ins_type=1):
         self.id = id
         self.file_name = file_name
         self.process = None
@@ -29,6 +29,7 @@ class CppProcess:
         self.running = False
         # logging.info('CppProcess __init__')
         self.init = False
+        self.ins_type = ins_type
 
     def start_thread(self):
         self.running = True
@@ -39,11 +40,11 @@ class CppProcess:
         self.thread.join()
 
     # def start(self, address='0.0.0.0'):
-    def start(self, address=['seu-ue-svc'], ins_type = 1):
+    def start(self, address=['seu-ue-svc']):
         # "-c", "(./sender seu-ue-svc client.json &);(./sender seu-ue-svc server.json)"]
         logging.info(f'start: {self.file_name}[{self.id}]') 
         with self.lock:
-            if ins_type == 6:
+            if self.ins_type == 6:
                 self.process = subprocess.Popen([f"./sender_duplex", 'seu-ue-svc', 'client.json'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 self.process = subprocess.Popen([f"./sender_duplex", 'seu-ue-svc', 'server.json'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 flags_stdout = fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_GETFL)
@@ -62,7 +63,7 @@ class CppProcess:
                 self.init = True
                 self.start_thread()
 
-    def stop(self, ins_type = 1):
+    def stop(self):
         logging.info(f'trying to stop: {self.file_name}[{self.id}]') 
         with self.lock:
             if self.process:

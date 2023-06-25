@@ -70,20 +70,20 @@ class ProcessControl:
                         change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType))
                         # sender
                         if param.insId in self.running_sender_cpps: # 如果当前业务流正在进行，先停止该业务流
-                            self.running_sender_cpps[param.insId].stop(ins_type = int(param.bizType))
+                            self.running_sender_cpps[param.insId].stop()
                             if time_point == 0: # 停止业务流的特定时间点
                                 logging.info(f'业务流 {param.insId} 停止')
                                 continue
 
                         self.running_sender_cpps[param.insId] = src.cpp_process.CppProcess('sender', param.insId, ins_type = int(param.bizType))
                         if param.insId in packet_start_id:
-                            self.running_sender_cpps[param.insId].start(['seu-ue-svc', str(packet_start_id[param.insId])], ins_type = int(param.bizType))
+                            self.running_sender_cpps[param.insId].start(['seu-ue-svc', str(packet_start_id[param.insId])])
                         else: 
-                            self.running_sender_cpps[param.insId].start(['seu-ue-svc', '0'], ins_type = int(param.bizType))
+                            self.running_sender_cpps[param.insId].start(['seu-ue-svc', '0'])
                             packet_start_id[param.insId] = 1
                         logging.debug('6')
                     elif param.endTime == time_point:
-                        self.running_sender_cpps[param.insId].stop(ins_type = int(param.bizType))
+                        self.running_sender_cpps[param.insId].stop()
                         # self.running_receiver_cpps[param.insId].stop()
                     else: 
                         print('error: neither startTime nor stop time!!')
