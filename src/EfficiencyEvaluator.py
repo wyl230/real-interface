@@ -16,6 +16,7 @@ flows_msg = {}
 packet_counting = {}
 last_send_time_point = time.time()
 total_bytes = 0
+ins_last_send_time = {}
 
 long_time_no_receive = {}
 
@@ -63,7 +64,13 @@ def if_long_time_no_receive(ins_id, cur_receive_packet_id, throughput):
         j = json.load(f)
         cur_send_packet_id = j[str(ins_id)]
 
-    threshold = 300 if (throughput - 10) < 5 else 1500 if (throughput - 260) < 50 else 10000
+    # 音频流 50pps
+    # 视频流 222pps
+    # 8s收不到包报丢包率100%
+    time_out = 8
+    cbr_pps = 50
+    vbr_pps = 222
+    threshold = cbr_pps * time_out if (throughput - 10) < 5 else 1500 if (throughput - 260) < 50 else 10000
 
     if cur_send_packet_id - cur_receive_packet_id > threshold:
         return True
@@ -132,6 +139,7 @@ class YourProtocol:
     def reinit(self):
         global last_send_time_point
         global flows_msg
+        global long_time_no_receive
         last_send_time_point = time.time()
         long_time_no_receive = {}
         flows_msg = {}
@@ -149,6 +157,26 @@ class YourProtocol:
         logging.info(f'formal send: {time.time()} {data_json}, total bytes: {total_bytes}')
         topic = "/evaluation/business/endToEnd"
         client.publish(topic, data_json)
+
+    def addDictTimeoutFlow(self, data_dict):
+        for ins_id in ins_last_send_time:
+            if ins_last_send_time[ins_id] - time.time() >= 7:
+                data_dict += [
+                    {
+                        "insId": int(ins_id),
+                        "maxDelay": 0,
+                        "minDelay": 0,
+                        "aveDelay": 0,
+                        "lossRate": 100,
+                        "throughput": 0,
+                        "speed": -1
+                    }
+                ]
+
+    def update_ins_last_send_time(self):
+        global flows_msg
+        for insId in flows_msg:
+            ins_last_send_time[insId] = time.time()
 
     def send_message_generate(self):
         global flows_msg
@@ -171,6 +199,8 @@ class YourProtocol:
                     "speed": -1
                 }
             ]
+        self.update_ins_last_send_time()
+        self.addDictTimeoutFlow(data_dict)
         return data_dict
 
     def datagram_received(self, data, addr):

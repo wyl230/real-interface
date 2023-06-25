@@ -259,8 +259,8 @@ def id_gen():
     selected_groups = random.sample(list(range(len(groups_num))), 2)
     # 
     s, d = selected_groups
-    source_id = random.randint(1, id_for_each_groups[s]) if s == 0 else random.randint(id_for_each_groups[s - 1] + 1, id_for_each_groups[s])
-    dest_id = random.randint(1, id_for_each_groups[d]) if d == 0 else random.randint(id_for_each_groups[d - 1] + 1, id_for_each_groups[d])
+    source_id = random.randint(0, id_for_each_groups[s]) if s == 0 else random.randint(id_for_each_groups[s - 1], id_for_each_groups[s] - 1)
+    dest_id = random.randint(0, id_for_each_groups[d]) if d == 0 else random.randint(id_for_each_groups[d - 1], id_for_each_groups[d] - 1)
     return (source_id, dest_id)
 
 # 泊松分布判断是否无碰撞（true为无碰撞）
