@@ -39,22 +39,30 @@ class CppProcess:
         self.thread.join()
 
     # def start(self, address='0.0.0.0'):
-    def start(self, address=['seu-ue-svc']):
+    def start(self, address=['seu-ue-svc'], ins_type = 1):
+        # "-c", "(./sender seu-ue-svc client.json &);(./sender seu-ue-svc server.json)"]
         logging.info(f'start: {self.file_name}[{self.id}]') 
         with self.lock:
-            self.process = subprocess.Popen([f"./{self.file_name}", *address], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-            # set the stdout and stderr pipes as non-blocking
-            flags_stdout = fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_GETFL)
-            fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_SETFL, flags_stdout | os.O_NONBLOCK)
-            flags_stderr = fcntl.fcntl(self.process.stderr.fileno(), fcntl.F_GETFL)
-            fcntl.fcntl(self.process.stderr.fileno(), fcntl.F_SETFL, flags_stderr | os.O_NONBLOCK)
+            if ins_type == 6:
+                self.process = subprocess.Popen([f"./sender_duplex", 'seu-ue-svc', 'client.json'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                self.process = subprocess.Popen([f"./sender_duplex", 'seu-ue-svc', 'server.json'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                flags_stdout = fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_GETFL)
+                fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_SETFL, flags_stdout | os.O_NONBLOCK)
+                flags_stderr = fcntl.fcntl(self.process.stderr.fileno(), fcntl.F_GETFL)
+                fcntl.fcntl(self.process.stderr.fileno(), fcntl.F_SETFL, flags_stderr | os.O_NONBLOCK)
+            else:
+                self.process = subprocess.Popen([f"./{self.file_name}", *address], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                # set the stdout and stderr pipes as non-blocking
+                flags_stdout = fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_GETFL)
+                fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_SETFL, flags_stdout | os.O_NONBLOCK)
+                flags_stderr = fcntl.fcntl(self.process.stderr.fileno(), fcntl.F_GETFL)
+                fcntl.fcntl(self.process.stderr.fileno(), fcntl.F_SETFL, flags_stderr | os.O_NONBLOCK)
 
             if not self.init:
                 self.init = True
                 self.start_thread()
 
-    def stop(self):
+    def stop(self, ins_type = 1):
         logging.info(f'trying to stop: {self.file_name}[{self.id}]') 
         with self.lock:
             if self.process:
