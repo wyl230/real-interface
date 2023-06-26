@@ -55,10 +55,10 @@ def location_config(location_par):
                 distribution_result = monocentric_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype, center_scat=0.1)
             elif distribution_type == '2':
                 # 2 多中心集中分布
-                distribution_result = centric_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype, center_scat = 0.1, center_num = 3)
+                distribution_result = centric_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype, center_scat = 0.05, center_num = 3)
             elif distribution_type == '3':
                 # 3 多中心随机分布
-                distribution_result = centric_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype, center_scat = 0.3, center_num = 3)
+                distribution_result = centric_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype, center_scat = 0.1, center_num = 6)
             elif distribution_type == '4':
                 # 4 均匀分布
                 distribution_result = uniform_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype)

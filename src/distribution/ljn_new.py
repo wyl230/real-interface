@@ -73,3 +73,27 @@ def centric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_confi
     print(Lat)
     return Lat, Lon
 
+radius_km = 1000
+ue = 10    # 可以设置各个中心的ue数量 [10, 20]
+scat = 0.1  # 可以设置各个中心的分布情况[0.1，0.2]
+lon = 0
+lat = 0
+centernum = 10
+points_lat, points_lon = centric_distribution(lon,lat,0,radius_km,ue,0,0,0,scat,centernum)
+
+# 绘制散点图
+fig, ax = plt.subplots()
+ax.scatter(points_lon, points_lat, s=10)
+ax.set_xlabel('Longitude')
+ax.set_ylabel('Latitude')
+ax.set_title('Generated Points Distribution')
+
+# 绘制圆
+
+radius_lon = radius_km / (111.32 * np.cos(np.radians(50)))
+circle = plt.Circle((0, lat), radius_lon, edgecolor='r', facecolor='none')
+ax.add_patch(circle)
+
+ax.grid(True)
+plt.show()
+# plt.savefig("111")
