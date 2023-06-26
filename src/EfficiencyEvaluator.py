@@ -36,8 +36,36 @@ def stop_udp_listener():
     global ok
     ok = False
 
+def check_time_out():
+    global total_formal_cnt
+    while True:
+        time.sleep(1)
+        logging.info(f'check time out: ins_last_send_time  {ins_last_send_time}')
+        data_dict = []
+        should_pop_id = []
+
+        for ins_id in ins_last_send_time:
+            if time.time() - ins_last_send_time[ins_id] >= 7:
+                data_dict += [ { "insId": int(ins_id), "maxDelay": 0, "minDelay": 0, "aveDelay": 0, "lossRate": 100, "throughput": 0, "speed": -1 } ]
+                should_pop_id.append(ins_id)
+        if not data_dict:
+            continue
+        data_json = json.dumps({ "data": data_dict })
+        # print('formal', time.time(), data_json, 'total bytes', total_bytes)
+        for ins_id in should_pop_id:
+            ins_last_send_time.pop(ins_id)
+
+        logging.debug(f'formal send: {time.time()} {data_json}, total bytes: {total_bytes}')
+        topic = "/evaluation/business/endToEnd"
+        client.publish(topic, data_json)
+
 async def udp_listener():
     print('udp...')
+    threading.Thread
+
+    t2 = threading.Thread(target=check_time_out)
+    t2.start()
+
     if config.get_local_mqtt():
         client.connect('162.105.85.167', 1883, 600)
     else:
@@ -97,7 +125,6 @@ def cal_loss_rate(flows_msg, ins_id, throughput):
             count += (id_list[i] - id_list[i-1] - 1)
     
     return round(count / len(id_list), 2)
-
 
 def cal_through_out(v):
     logging.debug('fff', v)
