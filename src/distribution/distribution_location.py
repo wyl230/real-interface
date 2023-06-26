@@ -1,17 +1,13 @@
 import numpy as np
 # 单中心分布函数
 
-def divide_number(number):
-    remainder = number % 3 # 求余数
-    quotient = number // 3 # 求商
-
-    # 根据余数选择切片方式
-    if remainder == 0:
-        return [number // 3] * 3
-    elif remainder == 1:
-        return [quotient, quotient, quotient + 1]
-    else:
-        return [quotient, quotient + 1, quotient + 1]
+def divide_number(m, n):
+    quotient = m // n
+    remainder = m % n
+    result = [quotient] * n
+    for i in range(remainder):
+        result[i] += 1
+    return result
 
 def centric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype, center_scat, center_num):
     earth_radius = 6371  # 地球半径，单位为公里
@@ -32,7 +28,7 @@ def centric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_confi
     
     # 每个中心分别生成对应数量的用户
     if isinstance(ue_num, int):
-        ue_num = divide_number(ue_num)
+        ue_num = divide_number(ue_num, center_num)
     if isinstance(center_scat, float):
         center_scat = [center_scat] * center_num
     Lat = np.empty((0,), dtype=np.ndarray)
