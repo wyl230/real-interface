@@ -156,15 +156,6 @@ def monocentric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_c
 
     return lat_deg, lon_deg
 
-def single_center_centralized_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype):
-    pass 
-
-def multicenter_centralized_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype):
-    pass 
-
-def multicenter_random_distribution():
-    pass 
-
 # 业务配置函数
 def task_config(task_par):
     # 解析为python字典
@@ -182,6 +173,7 @@ def task_config(task_par):
     biz_data = []
     # 生成视频业务配置
     for biz_comp in task_composition:
+        print('biz_comp: ', biz_comp)
         # todo
         if time_type == '1': # 均匀分布
             multi_flow_biz_config(biz_comp, task_num, biz_data, start_time, end_time)
@@ -224,6 +216,7 @@ def biz_config(biz_comp, task_num, biz_data, start_time, end_time, biz_duration=
     duration = end_time - start_time
     # 期望业务数及计算泊松强度
     E_task_num = task_num * biz_comp.weight
+    print('期望业务数: ', round(E_task_num))
     timedispar = (E_task_num / duration) * 1.17
 
     sum_time = 0.0
@@ -245,27 +238,17 @@ def biz_config(biz_comp, task_num, biz_data, start_time, end_time, biz_duration=
             }
             biz_data.append(tmpdict)
 
+    # if len(biz_data) > E_task_num:
+    #     print('截断')
+    #     biz_data = biz_data[:round(E_task_num)]
+
+    for i, d in zip(range(len(biz_data)), biz_data):
+        print(i, d)
     # 测试用
     # print(video_starttime)
 
     # n = len(biz_starttime)
     # 处理返回值
-
-
-
-    '''
-    for i in range(0, n):
-        # 生成一对收发端id
-        source_id, dest_id = id_gen()
-        tmpdict = {
-            'startTime': biz_starttime[i] * 1000,
-            'endTime': min(biz_starttime[i] + biz_duration, end_time) * 1000,
-            'source': source_id,
-            'destination': dest_id,
-            'bizType': biz_comp.bizType
-        }
-        biz_data.append(tmpdict)
-    '''
 
 # 收发端id生成（参数为两个元组）
 def id_gen():
@@ -287,7 +270,7 @@ def id_gen():
 def ifcollide(start_time, max_biz, video_starttime, sum_time, biz_duration, source_id, dest_id, ue_starttime):
     if str(source_id) in ue_starttime.keys():
         tmp = ue_starttime[str(source_id)]
-        if tmp[-max_biz] - start_time + biz_duration > sum_time:
+        if max(tmp) - start_time + biz_duration > sum_time:
             return False
         else:
             return True

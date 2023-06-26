@@ -9,6 +9,30 @@ def divide_number(m, n):
         result[i] += 1
     return result
 
+def distance(center_distance, center_angle, center_distance2, center_angle2):
+    x_a = center_distance * np.cos(center_angle) 
+    y_a = center_distance * np.sin(center_angle) 
+    x_b = center_distance2 * np.cos(center_angle2) 
+    y_b = center_distance2 * np.sin(center_angle2) 
+    return np.sqrt((x_a - x_b)**2 + (y_a - y_b)**2)
+
+def distance_not_too_close(center_distance, center_angle, radius):
+    for d,a in zip(center_distance, center_angle):
+        for d2,a2 in zip(center_distance, center_angle):
+            if distance(d, a, d2, a2) > radius / 2:
+                return False
+    return True
+
+def generate_center_pos(center_num, center_scat, radius):
+    generate_ok = False
+    while not generate_ok:
+        center_distance = np.random.uniform(0, (1 - center_scat)*radius, center_num)
+        center_angle = np.random.uniform(0, 2*np.pi, center_num)
+        generate_ok = distance_not_too_close(center_distance, center_angle, radius)
+    
+    return (center_distance, center_angle)
+
+
 def centric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype, center_scat, center_num):
     earth_radius = 6371  # 地球半径，单位为公里
     # 将经度、纬度转换为弧度
@@ -16,8 +40,8 @@ def centric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_confi
     lon_rad = np.radians(lon_0)
 
     # 生成中心点的位置
-    center_distance = np.random.uniform(0, (1 - center_scat)*radius, center_num)
-    center_angle = np.random.uniform(0, 2*np.pi, center_num)
+    center_distance, center_angle = generate_center_pos(center_num, center_scat, radius)
+
     center_delta_lat = np.arcsin(np.sin(lat_rad) * np.cos(center_distance / earth_radius) +
                                  np.cos(lat_rad) * np.sin(center_distance / earth_radius) * np.cos(center_angle))
     center_delta_lon = lon_rad + np.arctan2(np.sin(center_angle) * np.sin(center_distance / earth_radius) * np.cos(lat_rad),

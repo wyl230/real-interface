@@ -45,6 +45,7 @@ class CppProcess:
         logging.info(f'start: {self.file_name}[{self.id}]') 
         with self.lock:
             if self.ins_type == 6:
+                print('网页浏览启动')
                 self.process = subprocess.Popen([f"./sender_duplex", 'seu-ue-svc', 'client.json'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 self.process = subprocess.Popen([f"./sender_duplex", 'seu-ue-svc', 'server.json'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 flags_stdout = fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_GETFL)
