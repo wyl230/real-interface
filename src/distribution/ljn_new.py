@@ -1,40 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
 # 单中心分布函数
-
-def divide_number(m, n):
-    quotient = m // n
-    remainder = m % n
-    result = [quotient] * n
-    for i in range(remainder):
-        result[i] += 1
-    return result
-
-def distance(center_distance, center_angle, center_distance2, center_angle2):
-    x_a = center_distance * np.cos(center_angle) 
-    y_a = center_distance * np.sin(center_angle) 
-    x_b = center_distance2 * np.cos(center_angle2) 
-    y_b = center_distance2 * np.sin(center_angle2) 
-    return np.sqrt((x_a - x_b)**2 + (y_a - y_b)**2)
-
-def distance_not_too_close(center_distance, center_angle, radius):
-    for d,a in zip(center_distance, center_angle):
-        for d2,a2 in zip(center_distance, center_angle):
-            if distance(d, a, d2, a2) > radius / 2:
-                return False
-    return True
-
-def generate_center_pos(center_num, center_scat, radius):
-    generate_ok = False
-    while not generate_ok:
-        # 生成中心点的位置
-        U = np.random.uniform(0, (1 - center_scat)*radius*(1 - center_scat)*radius, center_num)
-        center_distance = np.sqrt(U)
-        center_angle = np.random.uniform(0, 2*np.pi, center_num)
-        generate_ok = distance_not_too_close(center_distance, center_angle, radius)
-    
-    return (center_distance, center_angle)
-
-
 def centric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype, center_scat, center_num):
     earth_radius = 6371  # 地球半径，单位为公里
     # 将经度、纬度转换为弧度
@@ -42,8 +8,9 @@ def centric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_confi
     lon_rad = np.radians(lon_0)
 
     # 生成中心点的位置
-    center_distance, center_angle = generate_center_pos(center_num, center_scat, radius)
-
+    U = np.random.uniform(0, (1 - center_scat)*radius*(1 - center_scat)*radius, center_num)
+    center_distance = np.sqrt(U)
+    center_angle = np.random.uniform(0, 2*np.pi, center_num)
     center_delta_lat = np.arcsin(np.sin(lat_rad) * np.cos(center_distance / earth_radius) +
                                  np.cos(lat_rad) * np.sin(center_distance / earth_radius) * np.cos(center_angle))
     center_delta_lon = lon_rad + np.arctan2(np.sin(center_angle) * np.sin(center_distance / earth_radius) * np.cos(lat_rad),
@@ -54,9 +21,11 @@ def centric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_confi
     
     # 每个中心分别生成对应数量的用户
     if isinstance(ue_num, int):
-        ue_num = divide_number(ue_num, center_num)
+        ue_num = [ue_num]
+        ue_num.extend(ue_num * (center_num - 1))
     if isinstance(center_scat, float):
-        center_scat = [center_scat] * center_num
+        center_scat = [center_scat]
+        center_scat.extend(center_scat * (center_num - 1))
     Lat = np.empty((0,), dtype=np.ndarray)
     Lon = np.empty((0,), dtype=np.ndarray)
     sum_ue_num = 0
@@ -91,42 +60,16 @@ def centric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_confi
             Lon[i] += 360
         # 将结果编辑为字典添加进distribution_result
         tmp_dict = {
-            'terminalId': ue_id[0],
-            'terminalName': '终端_' + str(ue_id[0]),
+            #'terminalId': ue_id[0],
+            #'terminalName': '终端_' + str(ue_id[0]),
             'terminalType': ue_type,
             'locationType': ue_loctype,
             'longitude': Lon[i],
             'latitude': Lat[i]
         }
-        ue_id[0] += 1
-        loc_config_res.append(tmp_dict)
+        #ue_id[0] += 1
+        #loc_config_res.append(tmp_dict)
     print(Lon)
     print(Lat)
     return Lat, Lon
 
-
-
-# if __name__=='__main__':
-#     radius_km = 1000
-#     ue = 10    # 可以设置各个中心的ue数量 [10, 20]
-#     scat = 0.1  # 可以设置各个中心的分布情况[0.1，0.2]
-#     lon = 0
-#     lat = 0
-#     centernum = 3
-#     points_lat, points_lon = centric_distribution(lon,lat,0,radius_km,ue,0,0,0,scat,centernum)
-
-#     # 绘制散点图
-#     fig, ax = plt.subplots()
-#     ax.scatter(points_lon, points_lat, s=10)
-#     ax.set_xlabel('Longitude')
-#     ax.set_ylabel('Latitude')
-#     ax.set_title('Generated Points Distribution')
-
-#     # 绘制圆
-
-#     radius_lon = radius_km / (111.32 * np.cos(np.radians(50)))
-#     circle = plt.Circle((0, lat), radius_lon, edgecolor='r', facecolor='none')
-#     ax.add_patch(circle)
-
-#     ax.grid(True)
-#     plt.savefig("111")
