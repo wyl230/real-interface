@@ -33,10 +33,8 @@ def centric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_confi
     # 每个中心分别生成对应数量的用户
     if isinstance(ue_num, int):
         ue_num = divide_number(ue_num)
-        ue_num.extend(ue_num * (center_num - 1))
     if isinstance(center_scat, float):
-        center_scat = [center_scat]
-        center_scat.extend(center_scat * (center_num - 1))
+        center_scat = [center_scat] * center_num
     Lat = np.empty((0,), dtype=np.ndarray)
     Lon = np.empty((0,), dtype=np.ndarray)
     sum_ue_num = 0
