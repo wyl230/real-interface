@@ -63,6 +63,7 @@ def location_config(location_par):
                 # 4 均匀分布
                 distribution_result = uniform_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype)
     # loc_config_res = json.dumps(loc_config_res, ensure_ascii=False)
+    print('位置分布结果: ', loc_config_res)
     return {"terminals": loc_config_res }
 
 # 均匀分布函数

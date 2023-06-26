@@ -13,6 +13,9 @@ class Multimap:
     def remove(self, key, value):
         self.dict[key].remove(value)
 
+    def get_dict(self):
+        return self.dict
+
 # # 示例用法
 # mmap = Multimap()
 # mmap.add("foo", 1)

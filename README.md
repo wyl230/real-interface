@@ -1,14 +1,20 @@
-todo:
+- process control
+  - load stream时，添加时间点
+  - start时，等待时间点，期间time_points都是最小堆
+
+
+
+<!-- todo:
 - mqtt消息连接测试：修改保持时间，或者减少重连时间
 - 丢包率，修改receiver
 
 注意：视频流或音频流，业务id设置成23023
 
 
-以下忽略
+以下忽略 -->
 <!-- 1. 接口1,3,4在routes.py中
-2. 接口2在query.py中
-3. 接口5在app.py中
+1. 接口2在query.py中
+2. 接口5在app.py中
 
 东北系统发来的请求用curl工具代替测试，
 东北系统发来的mqtt请求用mosquitto_pub工具代替测试， -->

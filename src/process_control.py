@@ -26,6 +26,54 @@ class ProcessControl:
         self.running_receiver_cpps = {}
         self.cv = cv
         self.mmap_mutex = mmap_mutex
+        self.cnt = 0
+
+    def print_debug(self):
+        print('mmap start ------------------')
+        for param in self.mmap.get_dict():
+            print(param)
+        print('mmap end ------------------')
+        print('time_points start ------------------')
+        print(self.time_points)
+        print('time_points end ------------------')
+    
+    def get_cnt(self):
+        self.cnt += 1
+        return self.cnt
+
+    def wait_until_next_time_point(self, time_point):
+        sooner_time_come = False
+        while timer.ms() < time_point + self.real_time - self.simulation_time:
+            if self.get_cnt() % 1000 == 0:
+                print('system time: ', timer.ms(), 'point: ', time_point, 'real: ', self.real_time, 'simulation:', self.simulation_time)
+            time.sleep(0.001) 
+            with self.cv:
+                # 此时有新的时间加入，并且早于当前的time_point, 此时应该：将当前的time_point塞回优先队列中，continue
+                if self.time_points and self.time_points[0] < time_point:
+                        heapq.heappush(self.time_points, time_point)
+                        sooner_time_come = True
+                        break
+        return sooner_time_come
+    
+    def start_single_process(self, param, time_point):
+        change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType))
+        # sender
+        if param.insId in self.running_sender_cpps: # 如果当前业务流正在进行，先停止该业务流 && 去掉该业务流对应的endtime
+            print(f'time points before stop: {self.time_points}')
+            print(f'end_time: {param.endTime}')
+            self.running_sender_cpps[param.insId].stop()
+            if timer.ms() < param.endTime + self.real_time - self.simulation_time:
+                self.time_points.remove(param.endTime)
+                heapq.heapify(self.time_points)
+            if time_point == 0: # 停止业务流的特定时间点
+                logging.info(f'业务流 {param.insId} 停止')
+
+        self.running_sender_cpps[param.insId] = src.cpp_process.CppProcess('sender', param.insId, ins_type = int(param.bizType))
+        if param.insId in packet_start_id:
+            self.running_sender_cpps[param.insId].start(['seu-ue-svc', str(packet_start_id[param.insId])])
+        else: 
+            self.running_sender_cpps[param.insId].start(['seu-ue-svc', '0'])
+            packet_start_id[param.insId] = 1
 
     def start(self):
         global forbidden_ids, forbidden_ids_lock
@@ -33,7 +81,7 @@ class ProcessControl:
         forbid = {}
         with forbidden_ids_lock:
             forbid = forbidden_ids
-        cnt = 0
+
         while True:
             # 申请锁
             with self.cv:
@@ -43,21 +91,12 @@ class ProcessControl:
                 time_point = heapq.heappop(self.time_points)
                 logging.info(f'pop time_point {time_point}')
             # 执行操作
-            sooner_time_come = False
-            while timer.ms() < time_point + self.real_time - self.simulation_time:
-                if (cnt:=cnt+1) % 1000 == 0:
-                    print('system time: ', timer.ms(), 'point: ', time_point, 'real: ', self.real_time, 'simulation:', self.simulation_time)
-                time.sleep(0.001) 
-                with self.cv:
-                    # 此时有新的时间加入，并且早于当前的time_point, 此时应该：将当前的time_point塞回优先队列中，continue
-                    if self.time_points and self.time_points[0] < time_point:
-                            heapq.heappush(self.time_points, time_point)
-                            sooner_time_come = True
-                            break
+            sooner_time_come = self.wait_until_next_time_point(time_point)
             if sooner_time_come:
                 continue
 
             with self.mmap_mutex:
+                self.print_debug()
                 for param in self.mmap.get(time_point):
                     # sender 
                     if param.insId in forbid:
@@ -67,23 +106,10 @@ class ProcessControl:
                     logging.debug(f'start time: {param.startTime}, time point: {time_point}')
                     logging.debug(f'end time: {param.endTime}, time point: {time_point}')
                     if param.startTime == time_point:
-                        change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType))
-                        # sender
-                        if param.insId in self.running_sender_cpps: # 如果当前业务流正在进行，先停止该业务流
-                            self.running_sender_cpps[param.insId].stop()
-                            if time_point == 0: # 停止业务流的特定时间点
-                                logging.info(f'业务流 {param.insId} 停止')
-                                continue
-
-                        self.running_sender_cpps[param.insId] = src.cpp_process.CppProcess('sender', param.insId, ins_type = int(param.bizType))
-                        if param.insId in packet_start_id:
-                            self.running_sender_cpps[param.insId].start(['seu-ue-svc', str(packet_start_id[param.insId])])
-                        else: 
-                            self.running_sender_cpps[param.insId].start(['seu-ue-svc', '0'])
-                            packet_start_id[param.insId] = 1
-                        logging.debug('6')
+                        self.start_single_process(param, time_point)
                     elif param.endTime == time_point:
                         self.running_sender_cpps[param.insId].stop()
                         # self.running_receiver_cpps[param.insId].stop()
                     else: 
                         print('error: neither startTime nor stop time!!')
+                    self.mmap.remove(time_point, param)

@@ -196,14 +196,16 @@ def load_stream(request_body: LoadStream):
         mmap.add(param.startTime, param)
         mmap.add(param.endTime, param)
         with cv:
+            print('time_points before: ', time_points)
             heapq.heappush(time_points, param.endTime)
+            print('time_points add end: ', time_points)
             heapq.heappush(time_points, param.startTime)
+            print('time_points add start: ', time_points)
             logging.info(f'添加了时间 s: {param.startTime}, e: {param.endTime}')
             cv.notify_all()
         with forbidden_ids_lock:
             if int(param.insId) in forbidden_ids:
                 forbidden_ids.remove(param.insId)
-
 
     start_send_delay_ok = True
     ok = True
