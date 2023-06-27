@@ -1,6 +1,32 @@
-- process control
+├── change_json.py: 修改sender进程启动的json，确定业务流id，用户id，业务流类型等
+├── client.json: 网页浏览的json
+├── server.json：网页浏览的json
+├── config.py: 一些全局变量的配置
+├── init.json: 通用业务的json
+├── main.py: 本地测试启动时使用python main.py 1
+├── packet_id.json：记录不同业务流发送了多少个包
+├── sender：通用业务的发流程序
+├── sender_duplex：网页业务的发流程序
+├── send_udp.py：单纯发送udp，测试用
+├── src
+│   ├── app.py
+│   ├── cpp_process.py：cpp程序的进程开启停止和日志输出
+│   ├── distribution
+│   │   ├── distribution_location.py：生成位置分布（多中心[随机和集中]）
+│   │   ├── distribution_task_functions.py：位置分布和业务分布生成
+│   ├── EfficiencyEvaluator.py：效能评估模块，接收receiver（pku-server）发来的业务流信息，整理为效能评估
+│   ├── multimap.py：multimap定义
+│   ├── process_control.py：控制发流进程
+│   ├── routes.py：接口路由定义
+│   └── timer.py：简单的时间函数
+├── test_stream_running_on_188_k8s_max_num.py：在188的k8s上测试业务流
+├── test_stream_running.py：本地测试启动业务流
+└── update_image.sh：更新镜像到188的仓库
+
+----
+<!-- - process control
   - load stream时，添加时间点
-  - start时，等待时间点，期间time_points都是最小堆
+  - start时，等待时间点，期间time_points都是最小堆 -->
 
 
 
