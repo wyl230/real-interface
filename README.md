@@ -1,3 +1,4 @@
+```
 ├── change_json.py: 修改sender进程启动的json，确定业务流id，用户id，业务流类型等
 ├── client.json: 网页浏览的json
 ├── server.json：网页浏览的json
@@ -22,7 +23,7 @@
 ├── test_stream_running_on_188_k8s_max_num.py：在188的k8s上测试业务流
 ├── test_stream_running.py：本地测试启动业务流
 └── update_image.sh：更新镜像到188的仓库
-
+```
 ----
 <!-- - process control
   - load stream时，添加时间点
