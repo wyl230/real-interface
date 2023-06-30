@@ -69,8 +69,8 @@ class ProcessControl:
             self.short_message_id ^= 1
             duplex_address = 'real-data-back-chat'
         elif int(param.bizType) == 6: # 网页
-            cur_duplex_client_port = self.duplex_client_port[0]
-            cur_duplex_server_port = self.duplex_server_port[0]
+            cur_duplex_client_port = 23101
+            cur_duplex_server_port = 23201
             duplex_address = 'real-data-back'
 
         change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType), tunnel_id=int(param.bizType), duplex_client_port=cur_duplex_client_port, duplex_server_port=cur_duplex_server_port, duplex_address=duplex_address)
