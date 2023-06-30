@@ -8,6 +8,7 @@ from time import sleep
 import logging
 import sys
 import src.timer as timer
+from change_json import update_source_module_id
 
 
 
@@ -44,14 +45,22 @@ class CppProcess:
         # "-c", "(./sender seu-ue-svc client.json &);(./sender seu-ue-svc server.json)"]
         logging.info(f'start: {self.file_name}[{self.id}]') 
         with self.lock:
-            if self.ins_type == 6:
+            if self.ins_type == 6 or self.ins_type == 3:
                 print('网页浏览启动')
-                self.process = subprocess.Popen([f"./sender_duplex", 'seu-ue-svc', 'client.json'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                self.process = subprocess.Popen([f"./sender_duplex", 'seu-ue-svc', 'server.json'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                update_source_module_id(100)
+                self.process = subprocess.Popen([f"./sender", 'seu-ue-svc', '0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                sleep(1)
+                update_source_module_id(200)
+                self.process2 = subprocess.Popen([f"./sender", 'seu-ue-svc', '0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 flags_stdout = fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_GETFL)
                 fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_SETFL, flags_stdout | os.O_NONBLOCK)
                 flags_stderr = fcntl.fcntl(self.process.stderr.fileno(), fcntl.F_GETFL)
                 fcntl.fcntl(self.process.stderr.fileno(), fcntl.F_SETFL, flags_stderr | os.O_NONBLOCK)
+
+                flags_stdout = fcntl.fcntl(self.process2.stdout.fileno(), fcntl.F_GETFL)
+                fcntl.fcntl(self.process2.stdout.fileno(), fcntl.F_SETFL, flags_stdout | os.O_NONBLOCK)
+                flags_stderr = fcntl.fcntl(self.process2.stderr.fileno(), fcntl.F_GETFL)
+                fcntl.fcntl(self.process2.stderr.fileno(), fcntl.F_SETFL, flags_stderr | os.O_NONBLOCK)
             else:
                 self.process = subprocess.Popen([f"./{self.file_name}", *address], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 # set the stdout and stderr pipes as non-blocking
@@ -72,6 +81,13 @@ class CppProcess:
                 logging.info(f'stop: {self.file_name}[{self.id}]') 
             else:
                 logging.warning('no process to stop')
+            
+            if self.ins_type == 6 or self.ins_type == 3:
+                if self.process2:
+                    self.process2.kill()
+                    logging.info(f'stop second: {self.file_name}[{self.id}]') 
+                else:
+                    logging.warning('no process to stop')
 
     def is_running(self):
         if self.process and self.process.poll() is None:

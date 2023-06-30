@@ -40,7 +40,7 @@ def check_time_out():
     global total_formal_cnt
     while True:
         time.sleep(1)
-        logging.info(f'check time out: ins_last_send_time  {ins_last_send_time}')
+        logging.debug(f'check time out: ins_last_send_time  {ins_last_send_time}')
         data_dict = []
         should_pop_id = []
 
@@ -216,6 +216,8 @@ class YourProtocol:
             # id = flows_msg[insId]['pod_id']
             # total_packet_num_for_each_flow += packet_counting[id][0]
             v = flows_msg[insId]
+            if v['packet_num'] == 0: 
+                continue
             data_dict += [
                 {
                     "insId": int(insId),

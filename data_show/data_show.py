@@ -23,10 +23,14 @@ def on_message(client, userdata, msg):
     # print(msg.payload)
     j = json.loads(msg.payload)
     print(f'业务条数 {len(j["data"])}')
+    print('--------------------')
+    for d in j['data']:
+        print(f"{d['insId']} max: {d['maxDelay']}, min: {d['minDelay']}, avg: {d['aveDelay']}, rate: {d['throughput']}")
     max_delay.append(j['data'][ins_id]['maxDelay'])
     min_delay.append(j['data'][ins_id]['minDelay'])
     avg_delay.append(j['data'][ins_id]['aveDelay'])
     throughput.append(j['data'][ins_id]['throughput'])
+    print('--------------------')
 
 def mqtt_subscribe():
     client = mqtt.Client()

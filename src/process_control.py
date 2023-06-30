@@ -27,6 +27,9 @@ class ProcessControl:
         self.cv = cv
         self.mmap_mutex = mmap_mutex
         self.cnt = 0
+        self.duplex_client_port = [23100, 23200]
+        self.duplex_server_port = [23300, 23400]
+        self.short_message_id = 0
 
     def print_debug(self):
         print('mmap start ------------------')
@@ -45,7 +48,7 @@ class ProcessControl:
         sooner_time_come = False
         while timer.ms() < time_point + self.real_time - self.simulation_time:
             if self.get_cnt() % 1000 == 0:
-                print('system time: ', timer.ms(), 'point: ', time_point, 'real: ', self.real_time, 'simulation:', self.simulation_time)
+                logging.debug('system time: ', timer.ms(), 'point: ', time_point, 'real: ', self.real_time, 'simulation:', self.simulation_time)
             time.sleep(0.001) 
             with self.cv:
                 # 此时有新的时间加入，并且早于当前的time_point, 此时应该：将当前的time_point塞回优先队列中，continue
@@ -54,9 +57,26 @@ class ProcessControl:
                         sooner_time_come = True
                         break
         return sooner_time_come
-    
+
+    def change_json_by_param(self, param):
+        change_json.update_source_module_id(0)
+        cur_duplex_client_port = 0
+        cur_duplex_server_port = 0
+        duplex_address = 'real-data-back-chat'
+        if int(param.bizType) == 3: # 短消息
+            cur_duplex_client_port = self.duplex_client_port[self.short_message_id]
+            cur_duplex_server_port = self.duplex_server_port[self.short_message_id]
+            self.short_message_id ^= 1
+            duplex_address = 'real-data-back-chat'
+        elif int(param.bizType) == 6: # 网页
+            cur_duplex_client_port = self.duplex_client_port[0]
+            cur_duplex_server_port = self.duplex_server_port[0]
+            duplex_address = 'real-data-back'
+
+        change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType), tunnel_id=int(param.bizType), duplex_client_port=cur_duplex_client_port, duplex_server_port=cur_duplex_server_port, duplex_address=duplex_address)
+
     def start_single_process(self, param, time_point):
-        change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType))
+        self.change_json_by_param(param)
         # sender
         if param.insId in self.running_sender_cpps: # 如果当前业务流正在进行，先停止该业务流 && 去掉该业务流对应的endtime
             print(f'time points before stop: {self.time_points}')
