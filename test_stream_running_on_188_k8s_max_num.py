@@ -20,8 +20,8 @@ t2 = f'''curl -X POST -H "Content-Type: application/json" -d '{{ "param": [{s}] 
 print(t1)
 
 
-# print('short message')
-# t2 = '''curl -X POST -H "Content-Type: application/json" -d '{ "param": [{ "insId": 234, "startTime": 2000, "endTime": 10000000, "source": 153, "destination": 283, "bizType": "3" }, { "insId": 2, "startTime": 4000, "endTime": 600000000000, "source": 154, "destination": 284, "bizType": "3" } ] }' http://162.105.85.188:32415/simulation/loadStream'''
+print('short message')
+t2 = '''curl -X POST -H "Content-Type: application/json" -d '{ "param": [{ "insId": 234, "startTime": 2000, "endTime": 10000000, "source": 153, "destination": 283, "bizType": "3" }, { "insId": 2, "startTime": 4000, "endTime": 600000000000, "source": 154, "destination": 284, "bizType": "3" } ] }' http://162.105.85.188:32415/simulation/loadStream'''
 
 
 print(t2)

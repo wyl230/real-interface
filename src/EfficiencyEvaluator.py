@@ -108,6 +108,7 @@ def if_long_time_no_receive(ins_id, cur_receive_packet_id, throughput):
 
 def cal_loss_rate(flows_msg, ins_id, throughput):
     id_list = flows_msg[ins_id]['id_list']
+    print("packet seqence: ", id_list)
     try:
         id_list = sorted(list(set(id_list))) # 去重并排序
         logging.debug('id list, rignt', id_list)

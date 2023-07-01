@@ -90,9 +90,9 @@ class ProcessControl:
 
         self.running_sender_cpps[param.insId] = src.cpp_process.CppProcess('sender', param.insId, ins_type = int(param.bizType))
         if param.insId in packet_start_id:
-            self.running_sender_cpps[param.insId].start(['seu-ue-svc', str(packet_start_id[param.insId])])
+            self.running_sender_cpps[param.insId].start(['162.105.85.70', str(packet_start_id[param.insId])])
         else: 
-            self.running_sender_cpps[param.insId].start(['seu-ue-svc', '0'])
+            self.running_sender_cpps[param.insId].start(['162.105.85.70', '0'])
             packet_start_id[param.insId] = 1
 
     def start(self):

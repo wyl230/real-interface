@@ -41,7 +41,7 @@ class CppProcess:
         self.thread.join()
 
     # def start(self, address='0.0.0.0'):
-    def start(self, address=['seu-ue-svc']):
+    def start(self, address=['162.105.85.70']):
         # "-c", "(./sender seu-ue-svc client.json &);(./sender seu-ue-svc server.json)"]
         logging.info(f'start: {self.file_name}[{self.id}]') 
         with self.lock:
