@@ -66,7 +66,7 @@ class ProcessControl:
         if int(param.bizType) == 3: # 短消息
             cur_duplex_client_port = self.duplex_client_port[self.short_message_id]
             cur_duplex_server_port = self.duplex_server_port[self.short_message_id]
-            self.short_message_id ^= 1
+            # self.short_message_id ^= 1
             duplex_address = 'real-data-back-chat'
         elif int(param.bizType) == 6: # 网页
             cur_duplex_client_port = 23101
