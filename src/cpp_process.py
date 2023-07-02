@@ -25,6 +25,7 @@ class CppProcess:
         self.id = id
         self.file_name = file_name
         self.process = None
+        self.process2 = None
         self.lock = threading.Lock()
         self.thread = threading.Thread(target=self.read_output)
         self.running = False
@@ -47,20 +48,22 @@ class CppProcess:
         with self.lock:
             if self.ins_type == 6 or self.ins_type == 3:
                 print('网页浏览启动')
-                update_source_module_id(100)
-                self.process = subprocess.Popen([f"./sender", 'seu-ue-svc', '0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                sleep(1)
                 update_source_module_id(200)
-                self.process2 = subprocess.Popen([f"./sender", 'seu-ue-svc', '0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                self.process = subprocess.Popen([f"./sender", 'seu-ue-svc', '0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                sleep(2)
+                update_source_module_id(100)
+                sleep(1)
+                self.process2 = subprocess.Popen([f"./sender", 'seu-ue-svc', '0'])
+
+                # flags_stdout = fcntl.fcntl(self.process2.stdout.fileno(), fcntl.F_GETFL)
+                # fcntl.fcntl(self.process2.stdout.fileno(), fcntl.F_SETFL, flags_stdout | os.O_NONBLOCK)
+                # flags_stderr = fcntl.fcntl(self.process2.stderr.fileno(), fcntl.F_GETFL)
+                # fcntl.fcntl(self.process2.stderr.fileno(), fcntl.F_SETFL, flags_stderr | os.O_NONBLOCK)
+
                 flags_stdout = fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_GETFL)
                 fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_SETFL, flags_stdout | os.O_NONBLOCK)
                 flags_stderr = fcntl.fcntl(self.process.stderr.fileno(), fcntl.F_GETFL)
                 fcntl.fcntl(self.process.stderr.fileno(), fcntl.F_SETFL, flags_stderr | os.O_NONBLOCK)
-
-                flags_stdout = fcntl.fcntl(self.process2.stdout.fileno(), fcntl.F_GETFL)
-                fcntl.fcntl(self.process2.stdout.fileno(), fcntl.F_SETFL, flags_stdout | os.O_NONBLOCK)
-                flags_stderr = fcntl.fcntl(self.process2.stderr.fileno(), fcntl.F_GETFL)
-                fcntl.fcntl(self.process2.stderr.fileno(), fcntl.F_SETFL, flags_stderr | os.O_NONBLOCK)
             else:
                 self.process = subprocess.Popen([f"./{self.file_name}", *address], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 # set the stdout and stderr pipes as non-blocking
