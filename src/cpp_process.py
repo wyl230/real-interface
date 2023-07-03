@@ -53,12 +53,12 @@ class CppProcess:
                 sleep(2)
                 update_source_module_id(100)
                 sleep(1)
-                self.process2 = subprocess.Popen([f"./sender", 'seu-ue-svc', '0'])
+                self.process2 = subprocess.Popen([f"./sender", 'seu-ue-svc', '0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-                # flags_stdout = fcntl.fcntl(self.process2.stdout.fileno(), fcntl.F_GETFL)
-                # fcntl.fcntl(self.process2.stdout.fileno(), fcntl.F_SETFL, flags_stdout | os.O_NONBLOCK)
-                # flags_stderr = fcntl.fcntl(self.process2.stderr.fileno(), fcntl.F_GETFL)
-                # fcntl.fcntl(self.process2.stderr.fileno(), fcntl.F_SETFL, flags_stderr | os.O_NONBLOCK)
+                flags_stdout2 = fcntl.fcntl(self.process2.stdout.fileno(), fcntl.F_GETFL)
+                fcntl.fcntl(self.process2.stdout.fileno(), fcntl.F_SETFL, flags_stdout2 | os.O_NONBLOCK)
+                flags_stderr2 = fcntl.fcntl(self.process2.stderr.fileno(), fcntl.F_GETFL)
+                fcntl.fcntl(self.process2.stderr.fileno(), fcntl.F_SETFL, flags_stderr2 | os.O_NONBLOCK)
 
                 flags_stdout = fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_GETFL)
                 fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_SETFL, flags_stdout | os.O_NONBLOCK)
@@ -122,5 +122,22 @@ class CppProcess:
 
             if self.process.poll() is not None:
                 break
+
+            if self.process2:
+                ready_to_read, ready_to_write, in_error = select.select([self.process2.stdout], [], [self.process2.stderr], 0)
+
+                for pipe in ready_to_read:
+                    line = pipe.readline().decode('utf-8')
+                    output += line
+                    print('stdout:', self.file_name + f'[{self.id}]', line.strip())
+
+                for pipe in in_error:
+                    line = pipe.readline().decode('utf-8')
+                    output += line
+                    print('error: ', self.file_name + f'[{self.id}]', line.strip())
+
+                if self.process2.poll() is not None:
+                    break
+
 
 
