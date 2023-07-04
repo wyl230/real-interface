@@ -5,7 +5,7 @@ import math
 import numpy as np
 import random
 from functools import reduce
-from src.distribution.distribution_location import centric_distribution
+from src.distribution.distribution_location import centric_distribution, diplomatic_distribution, provincial_capital_distribution
 
 groups_num = []
 
@@ -62,6 +62,15 @@ def location_config(location_par):
             elif distribution_type == '4':
                 # 4 均匀分布
                 distribution_result = uniform_distribution(center_longitude, center_latitude, ue_type, radius, ue_num, ue_id, loc_config_res, ue_loctype)
+        elif model_type == '1':
+            if distribution_type == '1':
+                # 1 使领馆分布
+                diplomatic_distribution(loc_config_res, ue_type, ue_loctype)
+            elif distribution_type == '2':
+                # 2 省会城市分布
+                provincial_capital_distribution(loc_config_res, ue_type, ue_loctype)
+
+
     # loc_config_res = json.dumps(loc_config_res, ensure_ascii=False)
     print('位置分布结果: ', loc_config_res)
     return {"terminals": loc_config_res }

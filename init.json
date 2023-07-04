@@ -19,5 +19,6 @@
   "duplex_server_address": "real-data-back",
   "duplex_client_port": 23200,
   "duplex_server_port": 23400,
-  "tunnel_id": 3
+  "tunnel_id": 3,
+  "should_print_log": true
 }

@@ -19,7 +19,7 @@ def distance(center_distance, center_angle, center_distance2, center_angle2):
 def distance_not_too_close(center_distance, center_angle, radius):
     for d,a in zip(center_distance, center_angle):
         for d2,a2 in zip(center_distance, center_angle):
-            if distance(d, a, d2, a2) > radius / 2:
+            if distance(d, a, d2, a2) > radius:
                 return False
     return True
 
@@ -130,3 +130,10 @@ def centric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_confi
 
 #     ax.grid(True)
 #     plt.savefig("111")
+
+
+def diplomatic_distribution(loc_config_res, ue_type, ue_loctype):
+    pass
+
+def provincial_capital_distribution(loc_config_res, ue_type, ue_loctype):
+    pass 
