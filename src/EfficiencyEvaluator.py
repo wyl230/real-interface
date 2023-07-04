@@ -118,6 +118,7 @@ def count_discontinuous(sequence):
 def cal_loss_rate(flows_msg, ins_id, packet_num):
     id_list = flows_msg[ins_id]['id_list']
     print("packet seqence: ", id_list)
+    id_list= id_list[-len(id_list) // 2:]
     try:
         id_list = sorted(list(set(id_list))) # 去重并排序
         logging.debug('id list, rignt', id_list)
