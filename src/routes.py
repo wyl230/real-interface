@@ -18,6 +18,7 @@ import logging, sys
 import src.distribution.distribution_task_functions as func
 import threading
 import config
+from src.statics.request_format import *
 
 from src.process_control import ProcessControl 
 from src.process_control import forbidden_ids_lock, forbidden_ids
@@ -349,8 +350,87 @@ async def b():
     return {"message": "线程池中运行sleep函数"}
 
 
-# pku数据统计部分
+## pku数据统计部分
+# chz
 import random
 @router.post("/test_data")
 def test_data(request_body: Empty):
     return [random.randint(100,1000) for i in range(7)]
+
+@router.post("/test_data")
+def test_data(request_body: Empty):
+    return [random.randint(100,1000) for i in range(7)]
+
+@router.post("/throughput_all")
+def throughput_all(request_body: Empty):
+    return [random.randint(100,1000) for i in range(7)]
+
+@router.post("/delay_single")
+def throughput_all(request_body: single_id):
+    return {
+        "delay": [1,2,3],
+        "min": [3,2,1],
+        "max": [2,2,2]
+    }
+
+@router.post("/loss_rate")
+def get_loss_rate(request_body: single_id):
+    return [22,33,44]
+
+@router.post("/throughput")
+def get_through_put(request_body: single_id):
+    return [22,33,100]
+
+@router.post("/service_table")
+def get_through_put(request_body: Empty):
+    return config.get_service_table()
+
+@router.post("/ue_table")
+def get_ue_table(request_body: Empty):
+    return config.get_ue_status()
+
+# ue link band
+@router.post("/ue_uplink_band")
+def get_ue_uplink_band(request_body: single_ue_id):
+    return [1,3,2,2,3]
+
+@router.post("/ue_downlink_band")
+def get_ue_downlink_band(request_body: single_ue_id):
+    return [1,3,2,2,3]
+
+# sat link band
+@router.post("/sat_uplink")
+def get_ue_uplink_band(request_body: single_sat_id):
+    return [1,3,2,2,3]
+
+@router.post("/sat_downlink")
+def get_ue_downlink_band(request_body: single_sat_id):
+    return [1,3,2,2,3]
+
+@router.post("/sat_link_forward")
+def get_ue_downlink_band(request_body: double_sat_id):
+    return [1,3,2,2,3]
+
+@router.post("/sat_link_recv")
+def get_ue_downlink_band(request_body: double_sat_id):
+    return [1,3,2,2,3]
+
+@router.post("/sat_link")
+def get_ue_downlink_band(request_body: single_sat_id):
+    return [1003, 1004, 1005, 1006]
+
+# wj
+@router.post("/ue_status")
+def test_data(request_body: UeStatus):
+    print(request_body)
+    config.set_ue_status(request_body)
+    return {"status": 1}
+
+@router.post("/sat_status")
+def test_data(request_body: SatStatus):
+    print(request_body)
+    config.set_sat_status(request_body)
+    return {"status": 1}
+
+# gf
+# query

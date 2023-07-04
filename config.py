@@ -3,6 +3,9 @@ class global_var:
     name = 'my_name'
     server = None
     local_mqtt = False
+    ue_status = {}
+    sat_status = {}
+    service_table = {}
 
 # 对于每个全局变量，都需要定义get_value和set_value接口
 def set_name(name):
@@ -21,3 +24,25 @@ def set_local_mqtt(local_mqtt):
 
 def get_local_mqtt():
     return global_var.local_mqtt
+
+# ue status
+def get_ue_status():
+    return global_var.ue_status
+
+def set_ue_status(ue_status):
+    global_var.ue_status = ue_status
+
+# sat status
+def get_sat_status():
+    return global_var.ue_status
+
+def set_sat_status(sat_status):
+    global_var.sat_status = sat_status
+
+# service table
+def get_service_table(data_dict):
+    return global_var.service_table
+
+
+def set_service_table(data_dict):
+    global_var.service_table = data_dict

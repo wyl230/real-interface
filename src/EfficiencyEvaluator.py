@@ -106,7 +106,16 @@ def if_long_time_no_receive(ins_id, cur_receive_packet_id, throughput):
         return True
     return False
 
-def cal_loss_rate(flows_msg, ins_id, throughput):
+
+def count_discontinuous(sequence):
+    count = 0
+    for i in range(len(sequence) - 1):
+        if sequence[i] + 1 != sequence[i + 1]:
+            count += sequence[i + 1] - sequence[i] - 1
+    return count
+
+
+def cal_loss_rate(flows_msg, ins_id, packet_num):
     id_list = flows_msg[ins_id]['id_list']
     print("packet seqence: ", id_list)
     try:
@@ -120,12 +129,10 @@ def cal_loss_rate(flows_msg, ins_id, throughput):
 
     # if if_long_time_no_receive(ins_id, id_list[-1], throughput):
     #     return round(100, 2)
+    count = count_discontinuous(id_list)
 
-    for i in range(1, len(id_list)):
-        if id_list[i] <= id_list[i-1]:
-            count += (id_list[i] - id_list[i-1] - 1)
-    
-    return round(count / len(id_list), 2)
+    print('loss', round(count / (id_list[-1] - id_list[0]) * 100, 2), 'packet_num', packet_num)
+    return round(count / (id_list[-1] - id_list[0]) * 100, 2)
 
 def cal_through_out(v):
     logging.debug('fff', v)
@@ -225,7 +232,7 @@ class YourProtocol:
                     "maxDelay": round(v['max_delay'] / 1000, 2) if v['max_delay'] > v['min_delay'] else v['min_delay'] + 0.8,
                     "minDelay": round(v['min_delay'] / 1000, 2),
                     "aveDelay": round(v['sum_delay'] / v['packet_num'] / 1000, 2),
-                    "lossRate": cal_loss_rate(flows_msg, insId, cal_through_out(v)),
+                    "lossRate": cal_loss_rate(flows_msg, insId, v['packet_num']),
                     # "throughput": round(v['byte_num'] / 2 / 1024, 2), # kB/s
                     "throughput": cal_through_out(v), # kB/s
                     # "throughput": round(v['byte_num'] / (time.time() - last_send_time_point) / 1000, 2), # kB/s
@@ -234,6 +241,7 @@ class YourProtocol:
             ]
         self.update_ins_last_send_time()
         self.addDictTimeoutFlow(data_dict)
+        config.set_service_table(data_dict)
         return data_dict
 
     def datagram_received(self, data, addr):
