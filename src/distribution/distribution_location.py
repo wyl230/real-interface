@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import json
 # 单中心分布函数
 
@@ -20,7 +21,7 @@ def distance(center_distance, center_angle, center_distance2, center_angle2):
 def distance_not_too_close(center_distance, center_angle, radius):
     for d,a in zip(center_distance, center_angle):
         for d2,a2 in zip(center_distance, center_angle):
-            if distance(d, a, d2, a2) > radius:
+            if distance(d, a, d2, a2) < radius:
                 return False
     return True
 
