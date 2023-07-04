@@ -66,12 +66,17 @@ class ProcessControl:
         if int(param.bizType) == 3: # 短消息
             cur_duplex_client_port = self.duplex_client_port[self.short_message_id]
             cur_duplex_server_port = self.duplex_server_port[self.short_message_id]
-            self.short_message_id ^= 1
+            # self.short_message_id ^= 1
             duplex_address = 'real-data-back-chat'
         elif int(param.bizType) == 6: # 网页
             cur_duplex_client_port = 23101
             cur_duplex_server_port = 23201
             duplex_address = 'real-data-back'
+        elif 11 <= int(param.bizType) <= 13: # 腾讯会议
+            cur_duplex_client_port = 22000 + (int(param.bizType) % 10) * 10
+            cur_duplex_server_port = cur_duplex_client_port + 1
+            duplex_address = 'real-data-back-video'
+
 
         change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType), tunnel_id=int(param.bizType), duplex_client_port=cur_duplex_client_port, duplex_server_port=cur_duplex_server_port, duplex_address=duplex_address)
 

@@ -77,11 +77,6 @@ def param_config(request_body: Configuration):
         "data": 'null' # 暂时为空
     }
 
-# 假装东北的服务器，接口2测试用
-# 本地测试: ok
-# curl -X POST -H "Content-Type: application/json" -d '{ "moduleCode": "pku", "paramType": ["baseTime"] }' http://127.0.0.1:5001/param/config
-# 或者执行query.py
-
 class Dongbei(BaseModel):
     moduleCode: str
     paramType: List[str]
@@ -91,14 +86,8 @@ def param_query(request_body: Dongbei):
     # return str(request_body) # 测试是否收到并解析request
     return { "code": 1, "message": "SUCCESS", "data": { "param": [ { "paramType": "baseTime", "paramName": "realTime", "paramValue": "1680055825000" }, { "paramType": "baseTime", "paramName": "simulationTime", "paramValue": "1640970000000" } ] } }
 
-# 接口3 系统初始化
-# 东北调此系统
-# 本地测试: ok
-# curl -X POST -H "Content-Type: application/json" -d '{}' http://127.0.0.1:5001/simulation/init
-
 class Empty(BaseModel):
     pass
-
 
 # 接口4，初始化时发送mqtt消息
 def on_init_use_mqtt():
@@ -117,7 +106,6 @@ def on_init_use_mqtt():
 
     topic = "/simulation/init"
     client.publish(topic, init_message_json)
-
 
 @router.post("/simulation/init")
 def simulation_init(request_body: Empty):
@@ -359,3 +347,10 @@ async def b():
     # loop = asyncio.get_event_loop()
     # result = await loop.run_in_executor(None, sleep_print, 2)
     return {"message": "线程池中运行sleep函数"}
+
+
+# pku数据统计部分
+import random
+@router.post("/test_data")
+def test_data(request_body: Empty):
+    return [random.randint(100,1000) for i in range(7)]
