@@ -1,4 +1,5 @@
 import numpy as np
+import json
 # 单中心分布函数
 
 def divide_number(m, n):
@@ -132,8 +133,26 @@ def centric_distribution(lon_0, lat_0, ue_type, radius, ue_num, ue_id, loc_confi
 #     plt.savefig("111")
 
 
-def diplomatic_distribution(loc_config_res, ue_type, ue_loctype):
+def diplomatic_distribution(loc_config_res, ue_type, ue_loctype, ue_num, groups_num):
     pass
 
-def provincial_capital_distribution(loc_config_res, ue_type, ue_loctype):
-    pass 
+def provincial_capital_distribution(loc_config_res, ue_type, ue_loctype, ue_num, groups_num):
+    province_data = []
+    with open('./src/distribution/province.json') as f:
+        province_data = json.load(f)
+
+    groups_num.extend(divide_number(ue_num, len(province_data)))
+    print(province_data)
+
+    for i, single_postion in zip(range(len(province_data)), province_data):
+        tmp_dict = {
+            'terminalId': i,
+            'terminalName': single_postion.name,
+            'terminalType': ue_type,
+            'locationType': ue_loctype,
+            'longitude': single_postion.longitude,
+            'latitude': single_postion.latitude
+        }
+        loc_config_res.append(tmp_dict)
+
+

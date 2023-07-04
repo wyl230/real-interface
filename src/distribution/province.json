@@ -1,0 +1,172 @@
+[
+  {
+    "name": "北京",
+    "latitude": 39.9042,
+    "longitude": 116.4074
+  },
+  {
+    "name": "天津",
+    "latitude": 39.0842,
+    "longitude": 117.2009
+  },
+  {
+    "name": "上海",
+    "latitude": 31.2304,
+    "longitude": 121.4737
+  },
+  {
+    "name": "重庆",
+    "latitude": 29.5630,
+    "longitude": 106.5516
+  },
+  {
+    "name": "哈尔滨",
+    "latitude": 45.75,
+    "longitude": 126.6333
+  },
+  {
+    "name": "长春",
+    "latitude": 43.8171,
+    "longitude": 125.3235
+  },
+  {
+    "name": "沈阳",
+    "latitude": 41.8057,
+    "longitude": 123.4315
+  },
+  {
+    "name": "呼和浩特",
+    "latitude": 40.8427,
+    "longitude": 111.7492
+  },
+  {
+    "name": "石家庄",
+    "latitude": 38.0428,
+    "longitude": 114.5149
+  },
+  {
+    "name": "太原",
+    "latitude": 37.8735,
+    "longitude": 112.5624
+  },
+  {
+    "name": "郑州",
+    "latitude": 34.7466,
+    "longitude": 113.6253
+  },
+  {
+    "name": "济南",
+    "latitude": 36.6512,
+    "longitude": 117.1201
+  },
+  {
+    "name": "南京",
+    "latitude": 32.0603,
+    "longitude": 118.7969
+  },
+  {
+    "name": "合肥",
+    "latitude": 31.8206,
+    "longitude": 117.2272
+  },
+  {
+    "name": "杭州",
+    "latitude": 30.2741,
+    "longitude": 120.1551
+  },
+  {
+    "name": "福州",
+    "latitude": 26.0745,
+    "longitude": 119.2965
+  },
+  {
+    "name": "南昌",
+    "latitude": 28.6820,
+    "longitude": 115.8579
+  },
+  {
+    "name": "武汉",
+    "latitude": 30.5928,
+    "longitude": 114.3055
+  },
+  {
+    "name": "长沙",
+    "latitude": 28.2278,
+    "longitude": 112.9388
+  },
+  {
+    "name": "广州",
+    "latitude": 23.1291,
+    "longitude": 113.2644
+  },
+  {
+    "name": "南宁",
+    "latitude": 22.8240,
+    "longitude": 108.3338
+  },
+  {
+    "name": "海口",
+    "latitude": 20.0442,
+    "longitude": 110.1990
+  },
+  {
+    "name": "成都",
+    "latitude": 30.5728,
+    "longitude": 104.0668
+  },
+  {
+    "name": "贵阳",
+    "latitude": 26.6466,
+    "longitude": 106.6301
+  },
+  {
+    "name": "昆明",
+    "latitude": 25.0330,
+    "longitude": 102.7103
+  },
+  {
+    "name": "拉萨",
+    "latitude": 29.6500,
+    "longitude": 91.1409
+  },
+  {
+    "name": "西安",
+    "latitude": 34.3416,
+    "longitude": 108.9398
+  },
+  {
+    "name": "兰州",
+    "latitude": 36.0611,
+    "longitude": 103.8343
+  },
+  {
+    "name": "西宁",
+    "latitude": 36.6232,
+    "longitude": 101.7856
+  },
+  {
+    "name": "银川",
+    "latitude": 38.4872,
+    "longitude": 106.2309
+  },
+  {
+    "name": "乌鲁木齐",
+    "latitude": 43.8256,
+    "longitude": 87.6168
+  },
+  {
+    "name": "香港",
+    "latitude": 22.3193,
+    "longitude": 114.1694
+  },
+  {
+    "name": "澳门",
+    "latitude": 22.1987,
+    "longitude": 113.5439
+  },
+  {
+    "name": "台北",
+    "latitude": 25.0330,
+    "longitude": 121.5654
+  }
+]

@@ -65,10 +65,10 @@ def location_config(location_par):
         elif model_type == '1':
             if distribution_type == '1':
                 # 1 使领馆分布
-                diplomatic_distribution(loc_config_res, ue_type, ue_loctype)
+                diplomatic_distribution(loc_config_res, ue_type, ue_loctype, ue_num, groups_num)
             elif distribution_type == '2':
                 # 2 省会城市分布
-                provincial_capital_distribution(loc_config_res, ue_type, ue_loctype)
+                provincial_capital_distribution(loc_config_res, ue_type, ue_loctype, ue_num, groups_num)
 
 
     # loc_config_res = json.dumps(loc_config_res, ensure_ascii=False)
