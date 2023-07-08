@@ -19,5 +19,6 @@
   "duplex_server_address": "real-data-back-chat",
   "duplex_client_port": 0,
   "duplex_server_port": 0,
-  "tunnel_id": 4
+  "tunnel_id": 4,
+  "should_print_log": false
 }

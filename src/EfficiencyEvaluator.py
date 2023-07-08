@@ -118,6 +118,7 @@ def count_discontinuous(sequence):
 def cal_loss_rate(flows_msg, ins_id, packet_num):
     id_list = flows_msg[ins_id]['id_list']
     print("packet seqence: ", id_list)
+    id_list= id_list[len(id_list) // 3: -len(id_list) // 3]
     try:
         id_list = sorted(list(set(id_list))) # 去重并排序
         logging.debug('id list, rignt', id_list)
@@ -242,6 +243,8 @@ class YourProtocol:
         self.update_ins_last_send_time()
         self.addDictTimeoutFlow(data_dict)
         config.set_service_table(data_dict)
+        config.set_throughput_for_each(data_dict)
+        config.set_indicator(data_dict)
         return data_dict
 
     def datagram_received(self, data, addr):

@@ -9,7 +9,7 @@ headers = { "Content-Type": "application/json; charset=UTF-8", }
 # chz 
 
 
-# gf
+# todo gf 
 def get_route_path(source_sat, destination_sat):
     data = {
         "data": [

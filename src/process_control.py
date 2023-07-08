@@ -11,6 +11,8 @@ logging.basicConfig(level=logging.DEBUG,format='%(asctime)s %(levelname)s %(mess
 
 forbidden_ids_lock = threading.Lock()
 forbidden_ids = set()
+send_address = '162.105.85.70'
+# send_address = 'seu-ue-svc'
 
 packet_start_id = {}
 
@@ -95,9 +97,9 @@ class ProcessControl:
 
         self.running_sender_cpps[param.insId] = src.cpp_process.CppProcess('sender', param.insId, ins_type = int(param.bizType))
         if param.insId in packet_start_id:
-            self.running_sender_cpps[param.insId].start(['162.105.85.70', str(packet_start_id[param.insId])])
+            self.running_sender_cpps[param.insId].start([send_address, str(packet_start_id[param.insId])])
         else: 
-            self.running_sender_cpps[param.insId].start(['162.105.85.70', '0'])
+            self.running_sender_cpps[param.insId].start([send_address, '0'])
             packet_start_id[param.insId] = 1
 
     def start(self):

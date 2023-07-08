@@ -357,79 +357,76 @@ import random
 def test_data(request_body: Empty):
     return [random.randint(100,1000) for i in range(7)]
 
-@router.post("/test_data")
-def test_data(request_body: Empty):
-    return [random.randint(100,1000) for i in range(7)]
-
 @router.post("/throughput_all")
 def throughput_all(request_body: Empty):
-    return [random.randint(100,1000) for i in range(7)]
+    return config.get_throughput_all()
 
 @router.post("/delay_single")
 def throughput_all(request_body: single_id):
     return {
-        "delay": [1,2,3],
-        "min": [3,2,1],
-        "max": [2,2,2]
+        "avg": config.get_avg_delay(single_id.ins_id),
+        "min": config.get_min_delay(single_id.ins_id),
+        "max": config.get_max_delay(single_id.ins_id),
     }
 
 @router.post("/loss_rate")
 def get_loss_rate(request_body: single_id):
-    return [22,33,44]
+    return get_loss_rate(single_id.ins_id)
 
 @router.post("/throughput")
-def get_through_put(request_body: single_id):
-    return [22,33,100]
+def get_throughput(request_body: single_id):
+    return get_throughput(single_id.ins_id)
 
 @router.post("/service_table")
-def get_through_put(request_body: Empty):
+def get_service_table(request_body: Empty):
     return config.get_service_table()
 
-@router.post("/ue_table")
+@router.post("/ue_table") # done
 def get_ue_table(request_body: Empty):
     return config.get_ue_status()
 
 # ue link band
 @router.post("/ue_uplink_band")
 def get_ue_uplink_band(request_body: single_ue_id):
-    return [1,3,2,2,3]
+    return config.get_ue_uplink_band()
 
 @router.post("/ue_downlink_band")
 def get_ue_downlink_band(request_body: single_ue_id):
-    return [1,3,2,2,3]
+    return config.get_ue_downlink_band()
 
 # sat link band
 @router.post("/sat_uplink")
 def get_ue_uplink_band(request_body: single_sat_id):
-    return [1,3,2,2,3]
+    return config.get_sat_uplink
 
 @router.post("/sat_downlink")
 def get_ue_downlink_band(request_body: single_sat_id):
-    return [1,3,2,2,3]
+    return config.get_sat_downlink
 
 @router.post("/sat_link_forward")
-def get_ue_downlink_band(request_body: double_sat_id):
-    return [1,3,2,2,3]
+def get_sat_link_forward(request_body: double_sat_id):
+    return config.get_sat_link_forward()
 
 @router.post("/sat_link_recv")
-def get_ue_downlink_band(request_body: double_sat_id):
-    return [1,3,2,2,3]
+def get_sat_link_recv(request_body: double_sat_id):
+    return config.get_sat_link_recv()
 
 @router.post("/sat_link")
 def get_ue_downlink_band(request_body: single_sat_id):
-    return [1003, 1004, 1005, 1006]
+    return config.get_sat_link()
 
 # wj
 @router.post("/ue_status")
-def test_data(request_body: UeStatus):
-    print(request_body)
-    config.set_ue_status(request_body)
+def test_data(ue_status: UeStatus):
+    print(ue_status)
+    config.set_ue_status(ue_status)
+    config.set_ue_related_list(ue_status)
     return {"status": 1}
 
 @router.post("/sat_status")
-def test_data(request_body: SatStatus):
-    print(request_body)
-    config.set_sat_status(request_body)
+def test_data(sat_status: SatStatus):
+    print(sat_status)
+    config.set_sat_status(sat_status)
     return {"status": 1}
 
 # gf
