@@ -22,7 +22,7 @@ set = int(set)
 print(types[set - 1])
 if set == 1 or set == 2:
     flow_num = int(input(f"输入{'cbr' if set == 1 else 'vbr'}条数: "))
-    s = [f""" {{ "insId" :{ins_id}, "startTime": 2000, "endTime": 100000000000, "source": 0, "destination": 1, "bizType": "{set}"  }} """ for ins_id in range(1 + ins_id_cnt, flow_num + 1 + ins_id_cnt) ]
+    s = [f""" {{ "insId" :{ins_id}, "startTime": 2000, "endTime": 100000000000, "source": 111, "destination": 122, "bizType": "{set}"  }} """ for ins_id in range(1 + ins_id_cnt, flow_num + 1 + ins_id_cnt) ]
     s = ",".join(s)
     t2 = f'''curl -X POST -H "Content-Type: application/json" -d '{{ "param": [{s}] }}' http://162.105.85.70:32549/simulation/loadStream'''
 elif set == 3: # 纯转发

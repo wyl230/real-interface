@@ -8,7 +8,6 @@ WORKDIR ./
 # RUN sed -i "s@/archive.ubuntu.com/@/mirrors.tuna.tsinghua.edu.cn/@g" /etc/apt/sources.list \
     # && rm -Rf /var/lib/apt/lists/* \
     # && apt-get update
-    #
 # RUN apt-get update
 
 # RUN apt-get install -y net-tools

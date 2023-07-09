@@ -24,6 +24,7 @@ class UeStatus(BaseModel):
 
 # sat_status
 # 都不清零 链路变化会清零
+# 
 # { "type": "sat", "id": 10001, "time": 12312, "location": { "longitude": 0, "latitude": 0 }, "neighbor_sat": [ { "id": 10001, "forward_packet": 10000, "receive_packet": 10000, "forward_byte": 10000, "receive_byte": 10000 }, { "id": 10002, "forward_packet": 10000, "receive_packet": 10000, "forward_byte": 10000, "receive_byte": 10000 } ], "total_up_packet": 10000, "total_down_packet": 10000, "total_up_byte": 1000000, "total_down_byte": 1000000 }
 
 
@@ -59,3 +60,11 @@ class single_sat_id(BaseModel):
 class double_sat_id(BaseModel):
     sat_id1: int
     sat_id2: int
+
+class mission_type(BaseModel):
+    interval: List[int]
+    loss: List[int]
+    throughput: List[int]
+    avg_interval: int
+    avg_loss: int
+    avg_throughput: int

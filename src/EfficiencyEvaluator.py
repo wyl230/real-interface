@@ -243,8 +243,7 @@ class YourProtocol:
         self.update_ins_last_send_time()
         self.addDictTimeoutFlow(data_dict)
         config.set_service_table(data_dict)
-        config.set_throughput_for_each(data_dict)
-        config.set_indicator(data_dict)
+        config.set_evaluator_for_each(data_dict)
         return data_dict
 
     def datagram_received(self, data, addr):

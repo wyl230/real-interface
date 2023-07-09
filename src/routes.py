@@ -396,38 +396,67 @@ def get_ue_downlink_band(request_body: single_ue_id):
 
 # sat link band
 @router.post("/sat_uplink")
-def get_ue_uplink_band(request_body: single_sat_id):
-    return config.get_sat_uplink
+def get_ue_uplink_band(body: single_sat_id):
+    return config.get_sat_uplink(body.sat_id)
 
 @router.post("/sat_downlink")
-def get_ue_downlink_band(request_body: single_sat_id):
-    return config.get_sat_downlink
+def get_ue_downlink_band(body: single_sat_id):
+    return config.get_sat_downlink(body.sat_id)
 
 @router.post("/sat_link_forward")
-def get_sat_link_forward(request_body: double_sat_id):
-    return config.get_sat_link_forward()
+def get_sat_link_forward(body: double_sat_id):
+    return config.get_sat_link_forward(body.sat_id1, body.sat_id2)
 
 @router.post("/sat_link_recv")
-def get_sat_link_recv(request_body: double_sat_id):
-    return config.get_sat_link_recv()
+def get_sat_link_recv(body: double_sat_id):
+    return config.get_sat_link_recv(body.sat_id1, body.sat_id2)
 
 @router.post("/sat_link")
-def get_ue_downlink_band(request_body: single_sat_id):
-    return config.get_sat_link()
+def get_ue_downlink_band(body: single_sat_id):
+    return config.get_sat_link(body.sat_id)
 
 # wj
 @router.post("/ue_status")
-def test_data(ue_status: UeStatus):
-    print(ue_status)
+def get_ue_status(ue_status: UeStatus):
+    # print('from wj', ue_status)
     config.set_ue_status(ue_status)
     config.set_ue_related_list(ue_status)
+    config.set_current_ue_to_sat(ue_status)
     return {"status": 1}
 
 @router.post("/sat_status")
-def test_data(sat_status: SatStatus):
-    print(sat_status)
+def get_sat_status(sat_status: SatStatus):
+    # print('from wj', sat_status)
     config.set_sat_status(sat_status)
+    config.set_sat_related_list(sat_status)
     return {"status": 1}
 
 # gf
+@router.post("/routing")
+def get_routing(routing: Empty):
+    headers = { "Content-Type": "application/json; charset=UTF-8", }
+    for (source_ue, destination_ue) in config.get_current_ue():
+        data = [ {"from": config.get_current_ue_to_sat[source_ue], "to": config.get_current_ue_to_sat[destination_ue]} , {...}]
+        r = requests.post("http://162.105.85.70:5001/xw/param/routing_config", headers=headers, verify=False, data=data)
+
+        print('from gf', r.text)
+
+    return []
+
 # query
+
+# json(数组) 70:32549 
+
+# 列表都是10个，端到端间隔 丢包 吞吐量 
+# /mission_info
+# 
+# { "interval": [10us], "loss": [10], "throughput": [10 kbps], "avg_interval": , avg_loss: 1, avg_throughput: }
+# 
+
+
+@router.post('/mission_info')
+def get_mission_info(mission_info: mission_type):
+    print(mission_info)
+    return {"status": 1}
+
+    

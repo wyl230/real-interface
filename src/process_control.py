@@ -1,3 +1,4 @@
+import config
 import time
 import src.timer as timer
 import change_json
@@ -79,8 +80,11 @@ class ProcessControl:
             cur_duplex_server_port = cur_duplex_client_port + 1
             duplex_address = 'real-data-back-video'
 
-
         change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType), tunnel_id=int(param.bizType), duplex_client_port=cur_duplex_client_port, duplex_server_port=cur_duplex_server_port, duplex_address=duplex_address)
+
+        config.set_current_ue(int(param.source), int(param.destination))
+        
+
 
     def start_single_process(self, param, time_point):
         self.change_json_by_param(param)

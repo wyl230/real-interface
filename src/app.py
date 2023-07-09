@@ -1,5 +1,5 @@
 # app文件，定义接口路由，mqtt示例
-
+import logging
 import multiprocessing
 import paho.mqtt.client as mqtt
 
@@ -71,6 +71,10 @@ def on_command(payload):
 # 工程启动时开启mqtt订阅
 @api.on_event("startup")
 def before_start():
+    logger = logging.getLogger("uvicorn.access")
+    handler = logging.handlers.RotatingFileHandler("api.log",mode="a",maxBytes = 100*1024, backupCount = 3)
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+    logger.addHandler(handler)
+
     mp = multiprocessing.Process(target=consume_topic)
     mp.start()
-
