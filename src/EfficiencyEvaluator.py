@@ -3,6 +3,7 @@ import paho.mqtt.client as mqtt
 import asyncio
 import time
 import json
+import requests
 import config
 import threading
 
@@ -132,8 +133,12 @@ def cal_loss_rate(flows_msg, ins_id, packet_num):
     #     return round(100, 2)
     count = count_discontinuous(id_list)
 
-    print('loss', round(count / (id_list[-1] - id_list[0]) * 100, 2), 'packet_num', packet_num)
-    return round(count / (id_list[-1] - id_list[0]) * 100, 2)
+    try:
+        print('loss', round(count / (id_list[-1] - id_list[0]) * 100, 2), 'packet_num', packet_num)
+        return round(count / (id_list[-1] - id_list[0]) * 100, 2)
+    except Exception as e:
+        print('loss rate error:', e)
+        return -1
 
 def cal_through_out(v):
     logging.debug('fff', v)
@@ -242,8 +247,19 @@ class YourProtocol:
             ]
         self.update_ins_last_send_time()
         self.addDictTimeoutFlow(data_dict)
-        config.set_service_table(data_dict)
-        config.set_evaluator_for_each(data_dict)
+
+
+        print('eva config service table ')
+        data = {"data": data_dict}
+        print(data)
+        headers = { 
+            'Accept': 'application/json',
+            "Content-Type": "application/json; charset=UTF-8", }
+        # r = requests.post("http://162.105.85.70:32549/set_service_table_and_evaluator_for_each", headers=headers, verify=False, data='''{"data": [{"insId": 4, "maxDelay": 232.85, "minDelay": 84.34, "aveDelay": 91.99, "lossRate": 0.0, "throughput": 21.44, "speed": -1}]}''') # todo 地址修改
+        r = requests.post("http://162.105.85.70:32549/set_service_table_and_evaluator_for_each", headers=headers, verify=False, data=json.dumps(data)) # todo 地址修改
+        print(r)
+        print('eva config service table end')
+
         return data_dict
 
     def datagram_received(self, data, addr):

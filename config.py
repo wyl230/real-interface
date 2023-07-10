@@ -6,7 +6,7 @@ class global_var:
     local_mqtt = False
     ue_status = []
     sat_status = {}
-    service_table = {}
+    service_table = []
 
     list_length = 12
 
@@ -32,6 +32,25 @@ class global_var:
 class Status:
     current_source_and_destination = []
     current_ue_to_sat = {}
+    id_to_source_and_dest = {}
+
+class Mission:
+    recv_num = 10
+    info = []
+
+    info_all = {"delay": [], "throughput": [], "loss_rate": []}
+
+    delay_single = {i:[] for i in range(10)}
+    throughput_single = {i:[] for i in range(10)}
+    loss_rate_single = {i:[] for i in range(10)}
+
+def set_id_to_source_and_dest(ins_id, source_id, destination_id):
+    Status.id_to_source_and_dest[ins_id] = (source_id, destination_id)
+    print('set_id_to_source_and_dest', Status.id_to_source_and_dest)
+
+def get_id_to_source_and_dest(ins_id):
+    print('50', ins_id)
+    return Status.id_to_source_and_dest[ins_id]
 
 def get_diff_list(my_list):
     time_diff = 5 # seconds
@@ -55,10 +74,13 @@ def get_real_ue_status():
     return global_var.ue_status
 
 def get_ue_status():
+    print('22',global_var.accumulate_ue_uplink)
+    print('11', global_var.accumulate_ue_downlink)
+    print('77 ', global_var.ue_status)
     try:
         print([{"ue_id": each_ue_status.id, "access_sat": each_ue_status.access_sat, "data": [each_ue_status.up_link_bandwidth, each_ue_status.down_link_bandwidth, get_ue_uplink(each_ue_status.id)[-1], get_ue_downlink(each_ue_status.id)[-1]]} for each_ue_status in global_var.ue_status])
 
-        return [{"ue_id": each_ue_status.id, "access_sat": each_ue_status.access_sat, "data": [each_ue_status.up_link_bandwidth, each_ue_status.down_link_bandwidth, get_ue_uplink(each_ue_status.id)[-1] * 8 / 1024, get_ue_downlink(each_ue_status.id)[-1]] * 8 / 1024} for each_ue_status in global_var.ue_status]
+        return [{"ue_id": each_ue_status.id, "access_sat": each_ue_status.access_sat, "data": [each_ue_status.up_link_bandwidth, each_ue_status.down_link_bandwidth, get_ue_uplink(each_ue_status.id)[-1] * 8 / 1024, get_ue_downlink(each_ue_status.id)[-1] * 8 / 1024]} for each_ue_status in global_var.ue_status]
     except:
         print('no ue table')
         return []
@@ -155,8 +177,9 @@ def update_display_list(data, list, max_length = global_var.list_length):
 
 def set_evaluator_for_each(data_dict):
     throughput_all_data = 0
+    data_dict = data_dict.data
     for flow_msg in data_dict:
-        ins_id = flow_msg['insId']
+        ins_id = flow_msg.insId
 
         check_id_exists_or_create_blank_list(ins_id, global_var.throughput)
         check_id_exists_or_create_blank_list(ins_id, global_var.max_delay)
@@ -164,13 +187,13 @@ def set_evaluator_for_each(data_dict):
         check_id_exists_or_create_blank_list(ins_id, global_var.avg_delay)
         check_id_exists_or_create_blank_list(ins_id, global_var.loss_rate)
 
-        update_display_list(flow_msg['throughput'], global_var.throughput[ins_id])
-        update_display_list(flow_msg['maxDelay'], global_var.max_delay[ins_id])
-        update_display_list(flow_msg['minDelay'], global_var.min_delay[ins_id])
-        update_display_list(flow_msg['aveDelay'], global_var.avg_delay[ins_id])
-        update_display_list(flow_msg['lossRate'], global_var.loss_rate[ins_id])
+        update_display_list(flow_msg.throughput, global_var.throughput[ins_id])
+        update_display_list(flow_msg.maxDelay, global_var.max_delay[ins_id])
+        update_display_list(flow_msg.minDelay, global_var.min_delay[ins_id])
+        update_display_list(flow_msg.aveDelay, global_var.avg_delay[ins_id])
+        update_display_list(flow_msg.lossRate, global_var.loss_rate[ins_id])
 
-        throughput_all_data += flow_msg['throughput']
+        throughput_all_data += flow_msg.throughput
     update_display_list(throughput_all_data, global_var.throughput_all)
 
 # chz
@@ -180,7 +203,17 @@ def get_service_table():
     return global_var.service_table
 
 def set_service_table(data_dict):
-    global_var.service_table = data_dict
+    # try:
+    global_var.service_table = []
+    print('181 service table', data_dict)
+    print('182 set_id_to_source_and_dest', Status.id_to_source_and_dest)
+    data_dict = data_dict.data
+    for data in data_dict:
+        print('qwer', get_id_to_source_and_dest(data.insId))
+        source_id, dest_id = get_id_to_source_and_dest(data.insId)
+        global_var.service_table.append({"ins_id": data.insId, "source_id": source_id, "dest_id": dest_id, "data": [data.throughput, data.aveDelay, data.lossRate]})
+    # except Exception as e:
+    #     print('set_service_table', e)
     print('180 service table', global_var.service_table)
 
 # gf
@@ -207,10 +240,23 @@ def set_current_ue(source, destination):
 
 # ue to sat
 def set_current_ue_to_sat(ue_status):
-    for ue in ue_status:
-        Status.current_ue_to_sat[ue.id] = ue.access_sat
+    Status.current_ue_to_sat[ue_status.id] = ue_status.access_sat
 
 def get_current_ue_to_sat(ue_id):
     return Status.current_ue_to_sat[ue_id]
 
+# 使领馆
+def set_mission_info(info):
+    Mission.info = info
 
+def get_mission_info():
+    return Mission.info
+
+def set_mission_related_list(mission_info):
+    for i in range(Mission.recv_num):
+        update_display_list(mission_info.interval[i], Mission.delay_single[i])
+        update_display_list(mission_info.throughput[i], Mission.throughput_single[i])
+        update_display_list(mission_info.loss[i], Mission.loss_rate_single[i])
+    update_display_list(mission_info.avg_interval, Mission.info_all['delay'])
+    update_display_list(mission_info.avg_loss, Mission.info_all['loss_rate'])
+    update_display_list(mission_info.avg_throughput, Mission.info_all['throughput'])

@@ -388,15 +388,15 @@ def get_ue_table(request_body: Empty):
 # ue link band
 @router.post("/ue_uplink_band")
 def get_ue_uplink_band(request_body: single_ue_id):
-    return config.get_ue_uplink_band()
+    return config.get_ue_uplink_band(request_body.ue_id)
 
 @router.post("/ue_downlink_band")
 def get_ue_downlink_band(request_body: single_ue_id):
-    return config.get_ue_downlink_band()
+    return config.get_ue_downlink_band(request_body.ue_id)
 
 # sat link band
 @router.post("/sat_uplink")
-def get_ue_uplink_band(body: single_sat_id):
+def get_sat_uplink(body: single_sat_id):
     return config.get_sat_uplink(body.sat_id)
 
 @router.post("/sat_downlink")
@@ -434,12 +434,12 @@ def get_sat_status(sat_status: SatStatus):
 # gf
 @router.post("/routing")
 def get_routing(routing: Empty):
+    print(config.get_current_ue)
     headers = { "Content-Type": "application/json; charset=UTF-8", }
-    for (source_ue, destination_ue) in config.get_current_ue():
-        data = [ {"from": config.get_current_ue_to_sat[source_ue], "to": config.get_current_ue_to_sat[destination_ue]} , {...}]
-        r = requests.post("http://162.105.85.70:5001/xw/param/routing_config", headers=headers, verify=False, data=data)
+    data = [ {"from": config.get_current_ue_to_sat(source_ue), "to": config.get_current_ue_to_sat(destination_ue)} for (source_ue, destination_ue) in config.get_current_ue() ]
+    r = requests.post("http://162.105.85.70:5001/xw/param/routing_config", headers=headers, verify=False, data=data)
 
-        print('from gf', r.text)
+    print('from gf', r.text)
 
     return []
 
@@ -457,6 +457,72 @@ def get_routing(routing: Empty):
 @router.post('/mission_info')
 def get_mission_info(mission_info: mission_type):
     print(mission_info)
+    config.set_mission_info(mission_info)
+    config.set_mission_related_list(mission_info)
     return {"status": 1}
 
     
+@router.post('/mission_info_table')
+def get_mission_info_table(body: Empty):
+    mission_info = get_mission_info_table()
+    id_to_position = ["北京-中国人民大会堂", "北京-中央电视台", "上海市人民政府", "上海证券交易所", "广州市政协", "广州市人民政府", "北京-市政府", "北京-国务院", "上海国际金融中心", "上海合作组织秘书处"]
+    return [{"id": i + 1, "source": '国外', "dest": id_to_position[i], "delay": mission_info.interval[i], "throughput": mission_info.throughput[i], "loss_rate": mission_info.loss[i],} for i in range(10)]
+
+@router.post('/mission_info_all')
+def get_mission_info_table(body: Empty):
+    return {"delay": [], "throughput": [], "loss_rate": []}
+
+@router.post('/mission_info_throughput')
+def get_mission_info_throughput(body: single_id):
+    pass 
+
+@router.post('/mission_info_loss_rate')
+def get_mission_info_loss_rate(body: single_id):
+    pass 
+
+@router.post('/mission_info_delay')
+def get_mission_info_delay(body: single_id):
+    pass 
+
+# timestamp
+
+@router.post('/start_time')
+def get_start_time(body: Empty):
+    # query for start time
+    return {"status": True, "start_time": int}
+
+# 跨文件
+# 1
+class data_class(BaseModel):
+    insId: int
+    maxDelay: float
+    minDelay: float
+    aveDelay: float
+    lossRate: float
+    throughput: float
+    speed: float
+
+class data_dict_class(BaseModel):
+    data: List[data_class]
+
+@router.post('/set_service_table_and_evaluator_for_each')
+def get_set_service_table(body: data_dict_class):
+    print('set_service_table_and_evaluator_for_each before')
+    config.set_service_table(body)
+    config.set_evaluator_for_each(body)
+    print('set_service_table_and_evaluator_for_each ok')
+    return {"status": True}
+
+# 2
+class set_current_ue_and_id_to_source_and_dest_class(BaseModel):
+    ins_id: int
+    source: int
+    dest: int
+
+@router.post('/set_current_ue_and_id_to_source_and_dest')
+def set_current_ue_and_id_to_source_and_dest(body: set_current_ue_and_id_to_source_and_dest_class):
+    print('set_current_ue_and_id_to_source_and_dest before')
+    config.set_current_ue(body.source, body.dest)
+    config.set_id_to_source_and_dest(body.ins_id, body.source, body.dest)
+    print('set_current_ue_and_id_to_source_and_dest ok')
+    return {"status": True}
