@@ -9,11 +9,10 @@ import threading
 
 # speed
 
-import logging
+from loguru import logger
 import sys
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s',stream=sys.stdout)
-# logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s',stream=sys.stdout)
 
+last_list_expand = []
 
 flows_msg = {}
 packet_counting = {}
@@ -41,7 +40,7 @@ def check_time_out():
     global total_formal_cnt
     while True:
         time.sleep(1)
-        logging.debug(f'check time out: ins_last_send_time  {ins_last_send_time}')
+        logger.debug(f'check time out: ins_last_send_time  {ins_last_send_time}')
         data_dict = []
         should_pop_id = []
 
@@ -56,7 +55,7 @@ def check_time_out():
         for ins_id in should_pop_id:
             ins_last_send_time.pop(ins_id)
 
-        logging.debug(f'formal send: {time.time()} {data_json}, total bytes: {total_bytes}')
+        logger.debug(f'formal send: {time.time()} {data_json}, total bytes: {total_bytes}')
         topic = "/evaluation/business/endToEnd"
         client.publish(topic, data_json)
 
@@ -117,14 +116,14 @@ def count_discontinuous(sequence):
 
 def cal_loss_rate(flows_msg, ins_id, packet_num):
     return 0
-    id_list = flows_msg[ins_id]['id_list']
-    # print("packet seqence: ", id_list)
+    global last_list_expand
+    try:
+        id_list = flows_msg[ins_id]['id_list']
+        # print("packet seqence: ", id_list)
 
-    last_list_expand = [] # 上一个丢包id list
-    # 计算丢包时，计算的包id 是 上一个id list没有经过计算的部分，和本次id list需要计算的部分
-    save = 0.1 # 表示对于一个id list的展开版本 不会计算后 10% 部分的数据
-    startid = 0
-    while True:
+        # 计算丢包时，计算的包id 是 上一个id list没有经过计算的部分，和本次id list需要计算的部分
+        save = 0.1 # 表示对于一个id list的展开版本 不会计算后 10% 部分的数据
+        startid = 0
         # 展开id list 并进行排序
         list_expand = [] # 1-3展开的list = [1 2 3]
 
@@ -141,7 +140,7 @@ def cal_loss_rate(flows_msg, ins_id, packet_num):
         # 计算丢包率
         num = int(len(list_expand)*(1-save)) # 本个list需要计算的包数 = 前 90%
         pack_num = num + len(last_list_expand) # 本次计算的包数 = 上个list剩下的 + 本个list需要计算的
-        calcu_list = last_list_expand + list_expand
+        calcu_list = last_list_expand + list_expand[:num]
         last_list_expand = list_expand[num:]
         # print(calcu_list)
         loss_num = 0
@@ -150,10 +149,13 @@ def cal_loss_rate(flows_msg, ins_id, packet_num):
             if (startid+1 != id):
                 loss_num += 1
             startid = id
+    except Exception as e:
+        print(f'loss rate error {e}')
+        return 0
 
 
-def cal_through_out(v):
-    logging.debug('fff', v)
+def cal_throughput(v):
+    logger.debug('fff', v)
     byte_num = 0
     for pod_id in filter(lambda x: len(x) > 50, v):
         byte_num += v[pod_id]['byte_num']
@@ -202,7 +204,7 @@ class YourProtocol:
 
     def send_mqtt(self, data_dict):
         global total_formal_cnt
-        logging.info(f'formal send {(total_formal_cnt := total_formal_cnt + 1)}')
+        logger.info(f'formal send {(total_formal_cnt := total_formal_cnt + 1)}')
 
         if total_formal_cnt % 20 == 0:
             self.reconnect_mqtt()
@@ -210,7 +212,7 @@ class YourProtocol:
         data_json = json.dumps({ "data": data_dict })
         # print('formal', time.time(), data_json, 'total bytes', total_bytes)
 
-        logging.debug(f'formal send: {time.time()} {data_json}, total bytes: {total_bytes}')
+        logger.debug(f'formal send: {time.time()} {data_json}, total bytes: {total_bytes}')
         topic = "/evaluation/business/endToEnd"
         client.publish(topic, data_json)
 
@@ -252,7 +254,7 @@ class YourProtocol:
                     "aveDelay": round(v['sum_delay'] / v['packet_num'] / 1000, 2),
                     "lossRate": cal_loss_rate(flows_msg, insId, v['packet_num']),
                     # "throughput": round(v['byte_num'] / 2 / 1024, 2), # kB/s
-                    "throughput": cal_through_out(v), # kB/s
+                    "throughput": cal_throughput(v) * 8, # kB/s
                     # "throughput": round(v['byte_num'] / (time.time() - last_send_time_point) / 1000, 2), # kB/s
                     "speed": -1
                 }
@@ -279,7 +281,7 @@ class YourProtocol:
 
         msg = data.decode('utf-8')
         payload = json.loads(msg) # 一个pod的传输信息
-        logging.debug(f'{time.time()} {payload}') # 1686895530.5503228 {'1': {'byte_num': 6936, 'id_list': [4265, 4266, 4267, 4268, 4269, 4270, 4271, 4272, 4273, 4274, 4275, 4276, 4277, 4278, 4279, 4280, 4281, 4282, 4283, 4284, 4285], 'last_min_max_delay_record': 1686895530, 'loss_rate': 0, 'max_delay': 141, 'max_packet_id': 4285, 'min_delay': 85, 'packet_num': 43, 'pod_id': '{}p[VOjCj%%"):DuBIOkAy^,X/)4[ZQdY9tN\\N^BLX6nG*==mAw[3p"!x%&OxP"p', 'sum_delay': 4457, 'total_packet_num': 43}, '2': {'byte_num': 1496, 'id_list': [2, 3, 1, 2], 'last_min_max_delay_record': 1686895298, 'loss_rate': 0, 'max_delay': 279, 'max_packet_id': 3, 'min_delay': 121, 'packet_num': 9, 'pod_id': '{}p[VOjCj%%"):DuBIOkAy^,X/)4[ZQdY9tN\\N^BLX6nG*==mAw[3p"!x%&OxP"p', 'sum_delay': 1562, 'total_packet_num': 9}, 
+        logger.debug(f'{time.time()} {payload}') # 1686895530.5503228 {'1': {'byte_num': 6936, 'id_list': [4265, 4266, 4267, 4268, 4269, 4270, 4271, 4272, 4273, 4274, 4275, 4276, 4277, 4278, 4279, 4280, 4281, 4282, 4283, 4284, 4285], 'last_min_max_delay_record': 1686895530, 'loss_rate': 0, 'max_delay': 141, 'max_packet_id': 4285, 'min_delay': 85, 'packet_num': 43, 'pod_id': '{}p[VOjCj%%"):DuBIOkAy^,X/)4[ZQdY9tN\\N^BLX6nG*==mAw[3p"!x%&OxP"p', 'sum_delay': 4457, 'total_packet_num': 43}, '2': {'byte_num': 1496, 'id_list': [2, 3, 1, 2], 'last_min_max_delay_record': 1686895298, 'loss_rate': 0, 'max_delay': 279, 'max_packet_id': 3, 'min_delay': 121, 'packet_num': 9, 'pod_id': '{}p[VOjCj%%"):DuBIOkAy^,X/)4[ZQdY9tN\\N^BLX6nG*==mAw[3p"!x%&OxP"p', 'sum_delay': 1562, 'total_packet_num': 9}, 
 
         update_flow_msg(payload)
 

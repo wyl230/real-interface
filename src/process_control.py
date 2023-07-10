@@ -5,12 +5,10 @@ import requests
 import src.timer as timer
 import change_json
 import src.cpp_process
-import logging, sys
+import sys
 import threading
 import heapq
-
-
-logging.basicConfig(level=logging.DEBUG,format='%(asctime)s %(levelname)s %(message)s',stream=sys.stdout)
+from loguru import logger
 
 forbidden_ids_lock = threading.Lock()
 forbidden_ids = set()
@@ -54,7 +52,7 @@ class ProcessControl:
         sooner_time_come = False
         while timer.ms() < time_point + self.real_time - self.simulation_time:
             if self.get_cnt() % 1000 == 0:
-                logging.debug('system time: ', timer.ms(), 'point: ', time_point, 'real: ', self.real_time, 'simulation:', self.simulation_time)
+                logger.debug('system time: ', timer.ms(), 'point: ', time_point, 'real: ', self.real_time, 'simulation:', self.simulation_time)
             time.sleep(0.001) 
             with self.cv:
                 # 此时有新的时间加入，并且早于当前的time_point, 此时应该：将当前的time_point塞回优先队列中，continue
@@ -100,7 +98,7 @@ class ProcessControl:
                 self.time_points.remove(param.endTime)
                 heapq.heapify(self.time_points)
             if time_point == 0: # 停止业务流的特定时间点
-                logging.info(f'业务流 {param.insId} 停止')
+                logger.info(f'业务流 {param.insId} 停止')
 
         self.running_sender_cpps[param.insId] = src.cpp_process.CppProcess('sender', param.insId, ins_type = int(param.bizType))
         if param.insId in packet_start_id:
@@ -123,7 +121,7 @@ class ProcessControl:
                     print('所有业务流发送完毕')
                     self.cv.wait()
                 time_point = heapq.heappop(self.time_points)
-                logging.info(f'pop time_point {time_point}')
+                logger.info(f'pop time_point {time_point}')
             # 执行操作
             sooner_time_come = self.wait_until_next_time_point(time_point)
             if sooner_time_come:
@@ -134,11 +132,11 @@ class ProcessControl:
                 for param in self.mmap.get(time_point):
                     # sender 
                     if param.insId in forbid:
-                        logging.debug(f'forbidden id: {param.insId}')
+                        logger.debug(f'forbidden id: {param.insId}')
                         continue
                     
-                    logging.debug(f'start time: {param.startTime}, time point: {time_point}')
-                    logging.debug(f'end time: {param.endTime}, time point: {time_point}')
+                    logger.debug(f'start time: {param.startTime}, time point: {time_point}')
+                    logger.debug(f'end time: {param.endTime}, time point: {time_point}')
                     if param.startTime == time_point:
                         self.start_single_process(param, time_point)
                     elif param.endTime == time_point:

@@ -453,8 +453,6 @@ def get_routing(routing: Empty):
     return [{"src": source_ue, "dst": destination_ue, "sats": sat_list['ids']} for (source_ue, destination_ue), sat_list in zip(config.get_current_ue(), payload['path'])] 
     # [{src:1,dst:2 ,sats:[10001,10002,10003]},{}]
 
-    return payload['path']
-
 # timestamp
 
 @router.post('/start_time')
@@ -464,7 +462,8 @@ def get_start_time(body: Empty):
     r = requests.post("http://162.105.85.120:5001/xw/param/time_config", headers=headers, verify=False, data={})
 
     logger.info('from gf', r.text)
-    return {"status": True, "start_time": 160000000}
+    payload = json.loads(r.text)
+    return {"status": True, "start_time": payload['timestamp']}
 
 # query
 
