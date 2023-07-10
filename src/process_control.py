@@ -85,7 +85,7 @@ class ProcessControl:
         change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType), tunnel_id=int(param.bizType), duplex_client_port=cur_duplex_client_port, duplex_server_port=cur_duplex_server_port, duplex_address=duplex_address)
 
         headers = { "Content-Type": "application/json; charset=UTF-8", }
-        r = requests.post("http://127.0.0.1:5001/set_current_ue_and_id_to_source_and_dest", headers=headers, verify=False, data=json.dumps({"ins_id": int(param.insId), "source": int(param.source), "dest": int(param.destination)}))
+        r = requests.post("http://127.0.0.1:5002/set_current_ue_and_id_to_source_and_dest", headers=headers, verify=False, data=json.dumps({"ins_id": int(param.insId), "source": int(param.source), "dest": int(param.destination)}))
         print('process part', r)
 
     def start_single_process(self, param, time_point):

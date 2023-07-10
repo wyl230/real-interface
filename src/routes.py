@@ -36,7 +36,7 @@ router = APIRouter()
 # 接口1，参数配置
 # 东北调此系统
 # 本地测试: ok
-# curl -X POST -H "Content-Type: application/json" -d '{ "param": [ { "paramType": "baseTime", "paramName": "realTime", "paramValue": "1680055825000" }, { "paramType": "baseTime", "paramName": "simulationTime", "paramValue": "1640970000000" } ] }' http://127.0.0.1:5001/param/config
+# curl -X POST -H "Content-Type: application/json" -d '{ "param": [ { "paramType": "baseTime", "paramName": "realTime", "paramValue": "1680055825000" }, { "paramType": "baseTime", "paramName": "simulationTime", "paramValue": "1640970000000" } ] }' http://127.0.0.1:5002/param/config
 
 # round(time.time() * 1000)
 
@@ -70,7 +70,7 @@ def param_config(request_body: Configuration):
     if not process_control_init:
         process_control_init = True
         headers = { "Content-Type": "application/json; charset=UTF-8", }
-        requests.post("http://127.0.0.1:5001/process_control", headers=headers, verify=False, data={})
+        requests.post("http://127.0.0.1:5002/process_control", headers=headers, verify=False, data={})
 
     return {
         "code": code,
@@ -142,7 +142,7 @@ def stopStream(body: single_id):
     # todo 删除对应的time_point中的mmap映射的param，同时停止进程
     # todo 访问loadstream，及时停止 
     headers = { "Content-Type": "application/json; charset=UTF-8", }
-    requests.post("http://127.0.0.1:5001/simulation/loadStream", headers=headers, verify=False, data={"param": [ { "insId" : body.insId , "startTime": 0, "endTime": 0, "source": 153, "destination": 283, "bizType": "1"  } ]})
+    requests.post("http://127.0.0.1:5002/simulation/loadStream", headers=headers, verify=False, data={"param": [ { "insId" : body.insId , "startTime": 0, "endTime": 0, "source": 153, "destination": 283, "bizType": "1"  } ]})
 
     return {
         "code": 1,
@@ -238,7 +238,7 @@ def start_asyncio():
 
 # *生成用户分布接口
 # test: 
-# curl -X POST -H "Content-Type: application/json" -d '{ "config": [ { "totalNums": 300, "terminalType":"1", "locationType": "1", "modelType": "1", "model": "1", "longitude": 123.32, "latitude": 43.34, "range": 200 }, { "totalNums": 300, "terminalType":"1", "locationType": "1", "modelType": "1", "model": "1", "longitude": 123.32, "latitude": 43.34, "range": 200 } ] }' http://127.0.0.1:5001/terminal/generate
+# curl -X POST -H "Content-Type: application/json" -d '{ "config": [ { "totalNums": 300, "terminalType":"1", "locationType": "1", "modelType": "1", "model": "1", "longitude": 123.32, "latitude": 43.34, "range": 200 }, { "totalNums": 300, "terminalType":"1", "locationType": "1", "modelType": "1", "model": "1", "longitude": 123.32, "latitude": 43.34, "range": 200 } ] }' http://127.0.0.1:5002/terminal/generate
 
 class TerminalConfig(BaseModel):
     totalNums: int
@@ -386,13 +386,13 @@ def get_ue_table(request_body: Empty):
     return config.get_ue_status()
 
 # ue link band
-@router.post("/ue_uplink_band")
+@router.post("/ue_uplink_band") # 实时的
 def get_ue_uplink_band(request_body: single_ue_id):
-    return config.get_ue_uplink_band(request_body.ue_id)
+    return config.get_ue_uplink(request_body.ue_id)
 
 @router.post("/ue_downlink_band")
 def get_ue_downlink_band(request_body: single_ue_id):
-    return config.get_ue_downlink_band(request_body.ue_id)
+    return config.get_ue_downlink(request_body.ue_id)
 
 # sat link band
 @router.post("/sat_uplink")
