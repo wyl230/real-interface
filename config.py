@@ -2,7 +2,7 @@ import time
 import sys
 from loguru import logger
 logger.remove()  # 这行很关键，先删除logger自动产生的handler，不然会出现重复输出的问题
-logger.add(sys.stderr, level='DEBUG')  # 只输出警告以上的日志
+logger.add(sys.stderr, level='INFO')  # 只输出警告以上的日志
 
 class global_var:
     '''需要定义全局变量的放在这里，最好定义一个初始值'''

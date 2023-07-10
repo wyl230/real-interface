@@ -365,18 +365,18 @@ def throughput_all(request_body: Empty):
 @router.post("/delay_single")
 def throughput_all(request_body: single_id):
     return {
-        "avg": config.get_avg_delay(single_id.ins_id),
-        "min": config.get_min_delay(single_id.ins_id),
-        "max": config.get_max_delay(single_id.ins_id),
+        "avg": config.get_avg_delay(request_body.insId),
+        "min": config.get_min_delay(request_body.insId),
+        "max": config.get_max_delay(request_body.insId),
     }
 
 @router.post("/loss_rate")
 def get_loss_rate(request_body: single_id):
-    return get_loss_rate(single_id.ins_id)
+    return config.get_loss_rate(request_body.insId)
 
 @router.post("/throughput")
 def get_throughput(request_body: single_id):
-    return get_throughput(single_id.ins_id)
+    return config.get_throughput(request_body.insId)
 
 @router.post("/service_table")
 def get_service_table(request_body: Empty):
@@ -448,9 +448,12 @@ def get_routing(routing: Empty):
     logger.info(f'send to gf request: {data}')
     r = requests.post("http://162.105.85.120:5001/xw/param/routing_config", headers=headers, verify=False, data=json.dumps(data))
 
-    logger.info('from gf', r.text)
+    logger.info(f'from gf, {r.text}')
+    payload = json.loads(r.text)
+    return [{"src": source_ue, "dst": destination_ue, "sats": sat_list['ids']} for (source_ue, destination_ue), sat_list in zip(config.get_current_ue(), payload['path'])] 
+    # [{src:1,dst:2 ,sats:[10001,10002,10003]},{}]
 
-    return []
+    return payload['path']
 
 # timestamp
 

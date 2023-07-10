@@ -115,30 +115,42 @@ def count_discontinuous(sequence):
             count += sequence[i + 1] - sequence[i] - 1
     return count
 
-
 def cal_loss_rate(flows_msg, ins_id, packet_num):
+    return 0
     id_list = flows_msg[ins_id]['id_list']
-    print("packet seqence: ", id_list)
-    id_list= id_list[len(id_list) // 3: -len(id_list) // 3]
-    try:
-        id_list = sorted(list(set(id_list))) # 去重并排序
-        logging.debug('id list, rignt', id_list)
-    except:
-        logging.debug(id_list, 'error')
-        return round(0, 2)
+    # print("packet seqence: ", id_list)
 
-    count = 0
+    last_list_expand = [] # 上一个丢包id list
+    # 计算丢包时，计算的包id 是 上一个id list没有经过计算的部分，和本次id list需要计算的部分
+    save = 0.1 # 表示对于一个id list的展开版本 不会计算后 10% 部分的数据
+    startid = 0
+    while True:
+        # 展开id list 并进行排序
+        list_expand = [] # 1-3展开的list = [1 2 3]
 
-    # if if_long_time_no_receive(ins_id, id_list[-1], throughput):
-    #     return round(100, 2)
-    count = count_discontinuous(id_list)
+        for index in range(int(len(id_list)/3)):
+            a = id_list[index*3]
+            b = id_list[index*3 + 2]
+            while a != b :
+                list_expand.append(a)
+                a = a + 1
+            list_expand.append(b)
+        list_expand.sort() # 排序
+        # print(list_expand) # 输出本次的id list
 
-    try:
-        print('loss', round(count / (id_list[-1] - id_list[0]) * 100, 2), 'packet_num', packet_num)
-        return round(count / (id_list[-1] - id_list[0]) * 100, 2)
-    except Exception as e:
-        print('loss rate error:', e)
-        return -1
+        # 计算丢包率
+        num = int(len(list_expand)*(1-save)) # 本个list需要计算的包数 = 前 90%
+        pack_num = num + len(last_list_expand) # 本次计算的包数 = 上个list剩下的 + 本个list需要计算的
+        calcu_list = last_list_expand + list_expand
+        last_list_expand = list_expand[num:]
+        # print(calcu_list)
+        loss_num = 0
+        for i in range(pack_num):
+            id = calcu_list[i]
+            if (startid+1 != id):
+                loss_num += 1
+            startid = id
+
 
 def cal_through_out(v):
     logging.debug('fff', v)
