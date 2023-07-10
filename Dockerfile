@@ -1,5 +1,5 @@
 # FROM python:3.9-slim-buster
-FROM video-interface:latest
+FROM video-interface-pku:latest
 # FROM python:3.9.12
 LABEL maintainer="YourName <youremail@example.com>"
 
@@ -15,7 +15,7 @@ WORKDIR ./
 # Copy all files to the container
 COPY . .
 # Install required packages
-RUN pip install  -r requirements.txt
+# RUN pip install  -r requirements.txt
 
 # Expose the default port for MQTT messaging
 EXPOSE 5001

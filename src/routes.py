@@ -14,7 +14,8 @@ import asyncio
 from src.EfficiencyEvaluator import udp_listener
 from src.EfficiencyEvaluator import ok
 import src.cpp_process
-import logging, sys
+import sys
+from loguru import logger
 import src.distribution.distribution_task_functions as func
 import threading
 import config
@@ -22,7 +23,6 @@ from src.statics.request_format import *
 
 from src.process_control import ProcessControl 
 from src.process_control import forbidden_ids_lock, forbidden_ids
-logging.basicConfig(level=logging.DEBUG,format='%(asctime)s %(levelname)s %(message)s',stream=sys.stdout)
 
 start_send_delay_ok = False
 
@@ -31,12 +31,13 @@ def start_send_delay():
     return start_send_delay_ok
 
 router = APIRouter()
+print('Start sending messages to server on port')
 
 # cpp
 # 接口1，参数配置
 # 东北调此系统
 # 本地测试: ok
-# curl -X POST -H "Content-Type: application/json" -d '{ "param": [ { "paramType": "baseTime", "paramName": "realTime", "paramValue": "1680055825000" }, { "paramType": "baseTime", "paramName": "simulationTime", "paramValue": "1640970000000" } ] }' http://127.0.0.1:5002/param/config
+# curl -X POST -H "Content-Type: application/json" -d '{ "param": [ { "paramType": "baseTime", "paramName": "realTime", "paramValue": "1680055825000" }, { "paramType": "baseTime", "paramName": "simulationTime", "paramValue": "1640970000000" } ] }' http://127.0.0.1:5001/param/config
 
 # round(time.time() * 1000)
 
@@ -70,7 +71,7 @@ def param_config(request_body: Configuration):
     if not process_control_init:
         process_control_init = True
         headers = { "Content-Type": "application/json; charset=UTF-8", }
-        requests.post("http://127.0.0.1:5002/process_control", headers=headers, verify=False, data={})
+        requests.post("http://127.0.0.1:5001/process_control", headers=headers, verify=False, data={})
 
     return {
         "code": code,
@@ -142,7 +143,7 @@ def stopStream(body: single_id):
     # todo 删除对应的time_point中的mmap映射的param，同时停止进程
     # todo 访问loadstream，及时停止 
     headers = { "Content-Type": "application/json; charset=UTF-8", }
-    requests.post("http://127.0.0.1:5002/simulation/loadStream", headers=headers, verify=False, data={"param": [ { "insId" : body.insId , "startTime": 0, "endTime": 0, "source": 153, "destination": 283, "bizType": "1"  } ]})
+    requests.post("http://127.0.0.1:5001/simulation/loadStream", headers=headers, verify=False, data={"param": [ { "insId" : body.insId , "startTime": 0, "endTime": 0, "source": 153, "destination": 283, "bizType": "1"  } ]})
 
     return {
         "code": 1,
@@ -190,7 +191,7 @@ def load_stream(request_body: LoadStream):
             print('time_points add end: ', time_points)
             heapq.heappush(time_points, param.startTime)
             print('time_points add start: ', time_points)
-            logging.info(f'添加了时间 s: {param.startTime}, e: {param.endTime}')
+            logger.info(f'添加了时间 s: {param.startTime}, e: {param.endTime}')
             cv.notify_all()
         with forbidden_ids_lock:
             if int(param.insId) in forbidden_ids:
@@ -238,7 +239,7 @@ def start_asyncio():
 
 # *生成用户分布接口
 # test: 
-# curl -X POST -H "Content-Type: application/json" -d '{ "config": [ { "totalNums": 300, "terminalType":"1", "locationType": "1", "modelType": "1", "model": "1", "longitude": 123.32, "latitude": 43.34, "range": 200 }, { "totalNums": 300, "terminalType":"1", "locationType": "1", "modelType": "1", "model": "1", "longitude": 123.32, "latitude": 43.34, "range": 200 } ] }' http://127.0.0.1:5002/terminal/generate
+# curl -X POST -H "Content-Type: application/json" -d '{ "config": [ { "totalNums": 300, "terminalType":"1", "locationType": "1", "modelType": "1", "model": "1", "longitude": 123.32, "latitude": 43.34, "range": 200 }, { "totalNums": 300, "terminalType":"1", "locationType": "1", "modelType": "1", "model": "1", "longitude": 123.32, "latitude": 43.34, "range": 200 } ] }' http://127.0.0.1:5001/terminal/generate
 
 class TerminalConfig(BaseModel):
     totalNums: int
@@ -326,11 +327,11 @@ def long_running_task():
     global real_time, simulation_time
     global mmap, time_points
     if real_time == 0:
-        logging.error('param config first!!!')
+        logger.error('param config first!!!')
         return {'process control': 'error: not param configured'}
 
     time_points.sort()
-    logging.info('time_points: ' + str(time_points))
+    logger.info('time_points: ' + str(time_points))
 
     process_control_a = ProcessControl(time_points, real_time, simulation_time, mmap, cv, mmap_mutex)
     process_control_a.start()
@@ -443,12 +444,24 @@ def get_sat_status(sat_status: SatStatus):
 def get_routing(routing: Empty):
     print(config.get_current_ue)
     headers = { "Content-Type": "application/json; charset=UTF-8", }
-    data = [ {"from": config.get_current_ue_to_sat(source_ue), "to": config.get_current_ue_to_sat(destination_ue)} for (source_ue, destination_ue) in config.get_current_ue() ]
-    r = requests.post("http://162.105.85.70:5001/xw/param/routing_config", headers=headers, verify=False, data=data)
+    data = {"data" :[ {"from_id": config.get_current_ue_to_sat(source_ue), "to_id": config.get_current_ue_to_sat(destination_ue)} for (source_ue, destination_ue) in config.get_current_ue() ]}
+    logger.info(f'send to gf request: {data}')
+    r = requests.post("http://162.105.85.120:5001/xw/param/routing_config", headers=headers, verify=False, data=json.dumps(data))
 
-    print('from gf', r.text)
+    logger.info('from gf', r.text)
 
     return []
+
+# timestamp
+
+@router.post('/start_time')
+def get_start_time(body: Empty):
+    # query for start time
+    headers = { "Content-Type": "application/json; charset=UTF-8", }
+    r = requests.post("http://162.105.85.120:5001/xw/param/time_config", headers=headers, verify=False, data={})
+
+    logger.info('from gf', r.text)
+    return {"status": True, "start_time": 160000000}
 
 # query
 
@@ -491,12 +504,6 @@ def get_mission_info_loss_rate(body: single_id):
 def get_mission_info_delay(body: single_id):
     pass 
 
-# timestamp
-
-@router.post('/start_time')
-def get_start_time(body: Empty):
-    # query for start time
-    return {"status": True, "start_time": int}
 
 # 跨文件
 # 1

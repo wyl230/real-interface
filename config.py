@@ -1,5 +1,8 @@
 import time
+import sys
 from loguru import logger
+logger.remove()  # 这行很关键，先删除logger自动产生的handler，不然会出现重复输出的问题
+logger.add(sys.stderr, level='DEBUG')  # 只输出警告以上的日志
 
 class global_var:
     '''需要定义全局变量的放在这里，最好定义一个初始值'''
@@ -65,8 +68,6 @@ def get_diff_list(my_list, divider=1):
 def get_diff_list_with_timestamp(my_list, divider=1):
     data_list = [i[0] for i in my_list]
     timestamp_list = [i[1] for i in my_list]
-    logger.info(data_list)
-    logger.info(timestamp_list)
     return list(map(lambda x, y, time_a, time_b: (y - x) / (time_b - time_a) / divider, data_list[:-1], data_list[1:], timestamp_list[:-1], timestamp_list[1:]))
 
 def get_ue_uplink(ue_id):
@@ -87,9 +88,9 @@ def get_real_ue_status():
     return global_var.ue_status
 
 def get_ue_status():
-    logger.info(f'22 accumulate_ue_uplink, {global_var.accumulate_ue_uplink}')
-    logger.info(f'11 accumulate_ue_downlink, {global_var.accumulate_ue_downlink}')
-    logger.info(f'77 global_var.ue_status, {global_var.ue_status}')
+    logger.debug(f'22 accumulate_ue_uplink, {global_var.accumulate_ue_uplink}')
+    logger.debug(f'11 accumulate_ue_downlink, {global_var.accumulate_ue_downlink}')
+    logger.debug(f'77 global_var.ue_status, {global_var.ue_status}')
     # try:
     res = []
     for each_ue_status in global_var.ue_status:
