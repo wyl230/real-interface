@@ -1,4 +1,6 @@
 import time
+from loguru import logger
+
 class global_var:
     '''需要定义全局变量的放在这里，最好定义一个初始值'''
     name = 'my_name'
@@ -16,10 +18,8 @@ class global_var:
     accumulate_ue_downlink = {}
     # sat
     sat_status = []
-    # double id 
-    sat_link_forward = {}
-    sat_link_recv = {}
     sat_link = {}
+    # double id 
     accumulate_sat_uplink = {}
     accumulate_sat_downlink = {}
     # evaluation
@@ -32,6 +32,10 @@ class global_var:
 
     # ue and sat 推数据间隔
     time_diff = 5 # seconds
+
+class AdjacentSat:
+    accumulate_sat_link_forward = {} # {(1,2): kbps}
+    accumulate_sat_link_recv = {}
 
 class Status:
     current_source_and_destination = []
@@ -50,22 +54,28 @@ class Mission:
 
 def set_id_to_source_and_dest(ins_id, source_id, destination_id):
     Status.id_to_source_and_dest[ins_id] = (source_id, destination_id)
-    print('set_id_to_source_and_dest', Status.id_to_source_and_dest)
+    logger.info(f'set_id_to_source_and_dest {Status.id_to_source_and_dest}')
 
 def get_id_to_source_and_dest(ins_id):
-    print('50', ins_id)
     return Status.id_to_source_and_dest[ins_id]
 
 def get_diff_list(my_list, divider=1):
     return list(map(lambda x, y: (y - x) / global_var.time_diff / divider, my_list[:-1], my_list[1:]))
 
+def get_diff_list_with_timestamp(my_list, divider=1):
+    data_list = [i[0] for i in my_list]
+    timestamp_list = [i[1] for i in my_list]
+    logger.info(data_list)
+    logger.info(timestamp_list)
+    return list(map(lambda x, y, time_a, time_b: (y - x) / (time_b - time_a) / divider, data_list[:-1], data_list[1:], timestamp_list[:-1], timestamp_list[1:]))
+
 def get_ue_uplink(ue_id):
     one_accumulate_ue_uplink = global_var.accumulate_ue_uplink[ue_id]
-    return get_diff_list(one_accumulate_ue_uplink, divider= 1 / 8 * 1024)
+    return get_diff_list_with_timestamp(one_accumulate_ue_uplink, divider= 1 / 8 * 1024)
 
 def get_ue_downlink(ue_id):
     one_accumulate_ue_downlink = global_var.accumulate_ue_downlink[ue_id]
-    return get_diff_list(one_accumulate_ue_downlink, divider=1 / 8 * 1024)
+    return get_diff_list_with_timestamp(one_accumulate_ue_downlink, divider=1 / 8 * 1024)
 # ue status
 #  总共的包
 # { "type": "ue", "id": 0, "time": 12328190, "access_sat": 11003, "up_link_bandwidth": 10000, "down_link_bandwidth": 10000, "up_link_packet": 20000000, "down_link_packet": 20000000, "up_link_byte": 200000000, "down_link_byte": 200000000, "location": { "longitude": 13.123, "latitude": 13.123, } }
@@ -77,17 +87,19 @@ def get_real_ue_status():
     return global_var.ue_status
 
 def get_ue_status():
-    print('22 accumulate_ue_uplink',global_var.accumulate_ue_uplink)
-    print('11 accumulate_ue_downlink', global_var.accumulate_ue_downlink)
-    print('77 global_var.ue_status', global_var.ue_status)
-    try:
-        res = [{"ue_id": each_ue_status.id, "access_sat": each_ue_status.access_sat, "data": [each_ue_status.up_link_bandwidth / 1024, each_ue_status.down_link_bandwidth / 1024, get_ue_uplink(each_ue_status.id)[-1], get_ue_downlink(each_ue_status.id)[-1]]} for each_ue_status in global_var.ue_status]
+    logger.info(f'22 accumulate_ue_uplink, {global_var.accumulate_ue_uplink}')
+    logger.info(f'11 accumulate_ue_downlink, {global_var.accumulate_ue_downlink}')
+    logger.info(f'77 global_var.ue_status, {global_var.ue_status}')
+    # try:
+    res = []
+    for each_ue_status in global_var.ue_status:
+        res.append({"ue_id": each_ue_status.id, "access_sat": each_ue_status.access_sat, "data": [each_ue_status.up_link_bandwidth / 1024, each_ue_status.down_link_bandwidth / 1024, get_ue_uplink(each_ue_status.id)[-1], get_ue_downlink(each_ue_status.id)[-1]]})
 
-        return res
+    return res
 
-    except:
-        print('no ue table')
-        return []
+    # except:
+    #     logger.info('no ue table')
+    #     return []
 
 def set_ue_status(ue_status):
     global_var.ue_status.append(ue_status)
@@ -99,12 +111,12 @@ def set_ue_related_list(ue_status):
     id = ue_status.id
     check_id_exists_or_create_blank_list(id, global_var.accumulate_ue_uplink)
     check_id_exists_or_create_blank_list(id, global_var.accumulate_ue_downlink)
-    update_display_list(ue_status.up_link_byte, global_var.accumulate_ue_uplink[id])
-    update_display_list(ue_status.down_link_byte, global_var.accumulate_ue_downlink[id])
+    update_display_list((ue_status.up_link_byte, ue_status.time), global_var.accumulate_ue_uplink[id])
+    update_display_list((ue_status.down_link_byte, ue_status.time), global_var.accumulate_ue_downlink[id])
 
 def get_ue_uplink_band(ue_id):
-    print('1359', global_var.ue_uplink_band)
-    print('1356', global_var.ue_uplink_band)
+    # logger.info('1359', global_var.ue_uplink_band)
+    # logger.info('1356', global_var.ue_uplink_band)
     return global_var.ue_uplink_band[ue_id]
 
 def get_ue_downlink_band(ue_id):
@@ -116,9 +128,9 @@ def check_id_exists_or_create_blank_list(id, a_dict):
 
 # sat
 def get_sat_uplink(sat_id):
-    print('accu', global_var.accumulate_sat_uplink)
+    # logger.info('accu', global_var.accumulate_sat_uplink)
     check_id_exists_or_create_blank_list(sat_id, global_var.accumulate_sat_uplink)
-    print('diff list', get_diff_list(global_var.accumulate_sat_uplink[sat_id]))
+    # logger.info('diff list', get_diff_list(global_var.accumulate_sat_uplink[sat_id]))
     return get_diff_list(global_var.accumulate_sat_uplink[sat_id], divider= 1024 / 8)
 
 def get_sat_downlink(sat_id):
@@ -129,6 +141,7 @@ def get_sat_status():
     return global_var.ue_status
 
 def set_sat_status(sat_status):
+    return # todo 不需要存储相关信息
     global_var.sat_status.append(sat_status)
     should_remove = [sat for sat in global_var.sat_status if time.time() - sat.time > 5]
     for sat in should_remove:
@@ -136,28 +149,50 @@ def set_sat_status(sat_status):
 
     # todo global_var.sat_status = sat_status 
 
-def set_sat_related_list(sat_status):
-    id = sat_status.id
-    check_id_exists_or_create_blank_list(id, global_var.accumulate_sat_downlink)
-    check_id_exists_or_create_blank_list(id, global_var.accumulate_sat_uplink)
+def check_list_using_list(id_list, list_list):
+    for id, list in zip(id_list, list_list):
+        check_id_exists_or_create_blank_list(id, list)
 
-    update_display_list(sat_status.total_up_byte, global_var.accumulate_sat_uplink[id])
-    update_display_list(sat_status.total_down_byte, global_var.accumulate_sat_downlink[id])
+
+def set_sat_related_list(sat_status):
+    sat_id = sat_status.id
+    check_list_using_list([sat_id] * 2, [global_var.accumulate_sat_downlink, global_var.accumulate_sat_uplink])
+
+    update_display_list(sat_status.total_up_byte, global_var.accumulate_sat_uplink[sat_id])
+    update_display_list(sat_status.total_down_byte, global_var.accumulate_sat_downlink[sat_id])
 
     for neighbor_sat in sat_status.neighbor_sat:
-        check_id_exists_or_create_blank_list((id, neighbor_sat.id), global_var.sat_link_forward)
+        check_list_using_list([(sat_id, neighbor_sat.id)] * 2, [AdjacentSat.accumulate_sat_link_forward, AdjacentSat.accumulate_sat_link_recv])
 
-        update_display_list(neighbor_sat.forward_byte, global_var.sat_link_forward[id, neighbor_sat.id]) # todo forward 
+        update_display_list(neighbor_sat.forward_byte, AdjacentSat.accumulate_sat_link_forward[sat_id, neighbor_sat.id]) 
+        update_display_list(neighbor_sat.receive_byte, AdjacentSat.accumulate_sat_link_recv[sat_id, neighbor_sat.id]) 
 
 def set_sat_link(sat_status):
-    global_var.sat_link = [sat_neighbor.id for sat_neighbor in sat_status.neighbor_sat]
+    global_var.sat_link[sat_status.id] = [sat_neighbor.id for sat_neighbor in sat_status.neighbor_sat]
+
+def delete_old_sat_link_data(list):
+    last = -1
+    remain_id = 0
+    for i, j in zip(range(len(list)), list):
+        if last >= j:
+            remain_id = i
+        last = j
+    list = list[remain_id:]
 
 # 4, 两个卫星之间的
 def get_sat_link_recv(id1, id2):
-    return get_sat_link_recv[id1, id2]
+    # 处理，如果链路之间字节数大于新的字节数，清空之前的
+    # logger.info('recv', AdjacentSat.accumulate_sat_link_recv)
+    delete_old_sat_link_data(AdjacentSat.accumulate_sat_link_recv[id1, id2])
+    return get_diff_list(AdjacentSat.accumulate_sat_link_recv[id1, id2], divider=1 / 8 * 1024)
 
 def get_sat_link_forward(id1, id2):
-    return get_sat_link_forward[id1, id2]
+    # logger.info('forward', AdjacentSat.accumulate_sat_link_forward)
+    delete_old_sat_link_data(AdjacentSat.accumulate_sat_link_forward[id1, id2])
+    return get_diff_list(AdjacentSat.accumulate_sat_link_forward[id1, id2], divider=1 / 8 * 1024)
+
+def get_sat_link(sat_id):
+    return global_var.sat_link[sat_id]
 
 # 效能评估
 def get_throughput_all():
@@ -210,22 +245,22 @@ def set_evaluator_for_each(data_dict):
 # chz
 # service table
 def get_service_table():
-    print('service table:', global_var.service_table)
+    logger.info(f'service table:, {global_var.service_table}')
     return global_var.service_table
 
 def set_service_table(data_dict):
     # try:
     global_var.service_table = []
-    print('181 service table', data_dict)
-    print('182 set_id_to_source_and_dest', Status.id_to_source_and_dest)
+    logger.info('181 service table', data_dict)
+    logger.info('182 set_id_to_source_and_dest', Status.id_to_source_and_dest)
     data_dict = data_dict.data
     for data in data_dict:
-        print('qwer', get_id_to_source_and_dest(data.insId))
+        logger.info('qwer', get_id_to_source_and_dest(data.insId))
         source_id, dest_id = get_id_to_source_and_dest(data.insId)
         global_var.service_table.append({"ins_id": data.insId, "source_id": source_id, "dest_id": dest_id, "data": [data.throughput, data.aveDelay, data.lossRate]})
     # except Exception as e:
-    #     print('set_service_table', e)
-    print('180 service table', global_var.service_table)
+    #     logger.info('set_service_table', e)
+    logger.info('180 service table', global_var.service_table)
 
 # gf
 

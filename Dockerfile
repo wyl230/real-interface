@@ -15,7 +15,7 @@ WORKDIR ./
 # Copy all files to the container
 COPY . .
 # Install required packages
-# RUN pip install  -r requirements.txt
+RUN pip install  -r requirements.txt
 
 # Expose the default port for MQTT messaging
 EXPOSE 5001

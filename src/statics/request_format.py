@@ -11,7 +11,7 @@ class UeLocation(BaseModel):
 class UeStatus(BaseModel):
     type: str
     id: int
-    time: int
+    time: float
     access_sat: int
     up_link_bandwidth: int
     down_link_bandwidth: int

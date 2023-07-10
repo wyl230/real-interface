@@ -405,11 +405,17 @@ def get_ue_downlink_band(body: single_sat_id):
 
 @router.post("/sat_link_forward")
 def get_sat_link_forward(body: double_sat_id):
-    return config.get_sat_link_forward(body.sat_id1, body.sat_id2)
+    try:
+        return config.get_sat_link_forward(body.sat_id1, body.sat_id2)
+    except:
+        return []
 
 @router.post("/sat_link_recv")
 def get_sat_link_recv(body: double_sat_id):
-    return config.get_sat_link_recv(body.sat_id1, body.sat_id2)
+    try:
+        return config.get_sat_link_recv(body.sat_id1, body.sat_id2)
+    except:
+        return []
 
 @router.post("/sat_link")
 def get_ue_downlink_band(body: single_sat_id):
@@ -429,6 +435,7 @@ def get_sat_status(sat_status: SatStatus):
     # print('from wj', sat_status)
     config.set_sat_status(sat_status)
     config.set_sat_related_list(sat_status)
+    config.set_sat_link(sat_status)
     return {"status": 1}
 
 # gf
