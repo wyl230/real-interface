@@ -115,11 +115,11 @@ def count_discontinuous(sequence):
     return count
 
 def cal_loss_rate(flows_msg, ins_id, packet_num):
-    return 0
+    # return 0
     global last_list_expand
     try:
         id_list = flows_msg[ins_id]['id_list']
-        # print("packet seqence: ", id_list)
+        print("packet seqence: ", id_list)
 
         # 计算丢包时，计算的包id 是 上一个id list没有经过计算的部分，和本次id list需要计算的部分
         save = 0.1 # 表示对于一个id list的展开版本 不会计算后 10% 部分的数据
@@ -136,22 +136,17 @@ def cal_loss_rate(flows_msg, ins_id, packet_num):
             list_expand.append(b)
         list_expand.sort() # 排序
         # print(list_expand) # 输出本次的id list
-
-        # 计算丢包率
-        num = int(len(list_expand)*(1-save)) # 本个list需要计算的包数 = 前 90%
+        num = int(len(list_expand) * (1 - save)) # 本个list需要计算的包数 = 前 90%
         pack_num = num + len(last_list_expand) # 本次计算的包数 = 上个list剩下的 + 本个list需要计算的
         calcu_list = last_list_expand + list_expand[:num]
         last_list_expand = list_expand[num:]
-        # print(calcu_list)
-        loss_num = 0
-        for i in range(pack_num):
-            id = calcu_list[i]
-            if (startid+1 != id):
-                loss_num += 1
-            startid = id
+        calcu_list.sort()
+        # print('calcu', calcu_list)
+        loss_num = count_discontinuous(calcu_list)
+        return round(loss_num / (calcu_list[-1] - calcu_list[0]) * 100, 2)
     except Exception as e:
         print(f'loss rate error {e}')
-        return 0
+        return -1
 
 
 def cal_throughput(v):

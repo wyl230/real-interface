@@ -8,12 +8,13 @@ import src.cpp_process
 import sys
 import threading
 import heapq
+import src.param_config
 from loguru import logger
 
 forbidden_ids_lock = threading.Lock()
 forbidden_ids = set()
 # send_address = '162.105.85.70'
-send_address = '162.105.85.120'
+send_address = src.param_config.send_address
 # send_address = 'seu-ue-svc'
 
 packet_start_id = {}
@@ -67,18 +68,24 @@ class ProcessControl:
         cur_duplex_client_port = 0
         cur_duplex_server_port = 0
         duplex_address = 'real-data-back-chat'
-        if int(param.bizType) == 3: # 短消息
+        send_type = int(param.bizType)
+        if send_type == 3: # 短消息
             cur_duplex_client_port = self.duplex_client_port[self.short_message_id]
             cur_duplex_server_port = self.duplex_server_port[self.short_message_id]
             # self.short_message_id ^= 1
             duplex_address = 'real-data-back-chat'
-        elif int(param.bizType) == 6: # 网页
+        elif send_type == 5: # ip电话
             cur_duplex_client_port = 23101
             cur_duplex_server_port = 23201
             duplex_address = 'real-data-back'
-        elif 11 <= int(param.bizType) <= 13: # 腾讯会议
-            cur_duplex_client_port = 22000 + (int(param.bizType) % 10) * 10
-            cur_duplex_server_port = cur_duplex_client_port + 1
+        elif send_type == 6: # 网页
+            cur_duplex_client_port = 23101
+            cur_duplex_server_port = 23201
+            duplex_address = 'real-data-back'
+        elif 11 <= send_type <= 13: # 腾讯会议
+            # cur_duplex_client_port = 22000 + (send_type % 10) * 10
+            cur_duplex_client_port = 22020
+            cur_duplex_server_port = 22011
             duplex_address = 'real-data-back-video'
 
         change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType), tunnel_id=int(param.bizType), duplex_client_port=cur_duplex_client_port, duplex_server_port=cur_duplex_server_port, duplex_address=duplex_address)

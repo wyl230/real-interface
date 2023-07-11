@@ -46,8 +46,8 @@ class CppProcess:
         # "-c", "(./sender seu-ue-svc client.json &);(./sender seu-ue-svc server.json)"]
         logging.info(f'start: {self.file_name}[{self.id}]') 
         with self.lock:
-            if self.ins_type == 6 or self.ins_type == 3 or (11 <= self.ins_type <= 13):
-                print(f"{'网页浏览' if self.ins_type == 6 else '短消息' if self.ins_type == 3 else '视频会议'}启动")
+            if self.ins_type == 6 or self.ins_type == 3 or self.ins_type == 5 or (11 <= self.ins_type <= 13):
+                print(f"{'网页浏览' if self.ins_type == 6 else '短消息' if self.ins_type == 3 else 'ip phone' if self.ins_type == 5 else '腾讯会议'}启动")
                 update_source_module_id(200)
                 self.process = subprocess.Popen([f"./sender", '162.105.85.70', '0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 sleep(2)
@@ -80,7 +80,7 @@ class CppProcess:
             else:
                 logging.warning('no process to stop')
             
-            if self.ins_type == 6 or self.ins_type == 3:
+            if self.ins_type == 6 or self.ins_type == 3 or self.ins_type == 5:
                 if self.process2:
                     self.process2.kill()
                     logging.info(f'stop second: {self.file_name}[{self.id}]') 

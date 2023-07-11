@@ -446,7 +446,10 @@ def get_routing(routing: Empty):
     headers = { "Content-Type": "application/json; charset=UTF-8", }
     data = {"data" :[ {"from_id": config.get_current_ue_to_sat(source_ue), "to_id": config.get_current_ue_to_sat(destination_ue)} for (source_ue, destination_ue) in config.get_current_ue() ]}
     logger.info(f'send to gf request: {data}')
-    r = requests.post("http://162.105.85.120:5001/xw/param/routing_config", headers=headers, verify=False, data=json.dumps(data))
+    try:
+        r = requests.post("http://162.105.85.120:5001/xw/param/routing_config", headers=headers, verify=False, data=json.dumps(data))
+    except:
+        return []
 
     logger.info(f'from gf, {r.text}')
     payload = json.loads(r.text)
@@ -459,7 +462,12 @@ def get_routing(routing: Empty):
 def get_start_time(body: Empty):
     # query for start time
     headers = { "Content-Type": "application/json; charset=UTF-8", }
-    r = requests.post("http://162.105.85.120:5001/xw/param/time_config", headers=headers, verify=False, data={})
+    try:
+        r = requests.post("http://162.105.85.120:5001/xw/param/time_config", headers=headers, verify=False, data={})
+
+    except Exception as e:
+        # print('start time', e)
+        return []
 
     logger.info('from gf', r.text)
     payload = json.loads(r.text)

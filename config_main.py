@@ -14,7 +14,7 @@ ins_id_cnt = int(input('输入起始的业务流id: '))
 
 print(f'业务流配置：cbr(80kpbs), vbr(2Mbps)')
 
-types = ['(1) cbr', '(2) vbr', '(3) 纯转发(video(vlc) | 调速率和包长 | 非网页短消息)', '(4) 网页消息 | ip电话 | iperf3', '(5) 外部网络 (腾讯会议 | 外部网页浏览) ', '(6) 短消息']
+types = ['(1) cbr', '(2) vbr', '(3) 纯转发(video(vlc) | 调速率和包长 | 非网页短消息)', '(4) 网页消息 | iperf3', '(5) 外部网络 (腾讯会议 | 外部网页浏览) ', '(6) 短消息', '(7) ip电话']
 
 set = input('\n'.join(types) + '\n')
 
@@ -36,10 +36,13 @@ elif set == 4: # 网页 | ip电话 | iperf3
 
 elif set == 5: # 外部网络
     req = '{ "param": [{ "insId": 1003, "startTime": 2000, "endTime": 10000000, "source": 0, "destination": 1, "bizType": "11"}, { "insId": 1004, "startTime": 2000, "endTime": 10000000, "source": 0, "destination": 1, "bizType": "12" }, { "insId": 1005, "startTime": 2000, "endTime": 10000000, "source": 0, "destination": 1, "bizType": "13" } ] }'
-    t2 = '''curl -X POST -H "Content-Type: application/json" -d '{ "param": [{ "insId": 1003, "startTime": 2000, "endTime": 10000000, "source": 0, "destination": 1, "bizType": "11"}, { "insId": 1004, "startTime": 2000, "endTime": 10000000, "source": 0, "destination": 1, "bizType": "12" }, { "insId": 1005, "startTime": 2000, "endTime": 10000000, "source": 0, "destination": 1, "bizType": "13" } ] }' http://162.105.85.70:32549/simulation/loadStream'''
+    t2 = '''curl -X POST -H "Content-Type: application/json" -d '{ "param": [{ "insId": 1003, "startTime": 2000, "endTime": 10000000, "source": 0, "destination": 1, "bizType": "11"} ] }' http://162.105.85.70:32549/simulation/loadStream'''
 
 elif set == 6: # 短消息
     t2 = '''curl -X POST -H "Content-Type: application/json" -d '{ "param": [{ "insId": 23001, "startTime": 2000, "endTime": 100000000, "source": 5, "destination": 7, "bizType": "3"  } ] }'  http://162.105.85.70:32549/simulation/loadStream'''
+
+elif set == 7: # ip
+    t2 = '''curl -X POST -H "Content-Type: application/json" -d '{ "param": [{ "insId": 23001, "startTime": 2000, "endTime": 100000000, "source": 0, "destination": 1, "bizType": "5"  } ] }'  http://162.105.85.70:32549/simulation/loadStream'''
 
 print(t1)
 print(t2)

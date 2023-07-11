@@ -20,5 +20,7 @@
   "duplex_client_port": 0,
   "duplex_server_port": 0,
   "tunnel_id": 1,
-  "should_print_log": false
+  "should_print_log": true,
+  "send_to_address": "162.105.85.120",
+  "loss_rate": 0
 }
