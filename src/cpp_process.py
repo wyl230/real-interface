@@ -3,6 +3,7 @@ import select
 import subprocess
 import fcntl
 import threading
+import src.param_config
 import random
 from time import sleep
 import logging
@@ -42,18 +43,18 @@ class CppProcess:
         self.thread.join()
 
     # def start(self, address='0.0.0.0'):
-    def start(self, address=['162.105.85.70']):
+    def start(self, address=[src.param_config.send_address]):
         # "-c", "(./sender seu-ue-svc client.json &);(./sender seu-ue-svc server.json)"]
         logging.info(f'start: {self.file_name}[{self.id}]') 
         with self.lock:
             if self.ins_type == 6 or self.ins_type == 3 or self.ins_type == 5 or (11 <= self.ins_type <= 13):
                 print(f"{'网页浏览' if self.ins_type == 6 else '短消息' if self.ins_type == 3 else 'ip phone' if self.ins_type == 5 else '腾讯会议'}启动")
                 update_source_module_id(200)
-                self.process = subprocess.Popen([f"./sender", '162.105.85.70', '0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                self.process = subprocess.Popen([f"./sender", src.param_config.send_address, '0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 sleep(2)
                 update_source_module_id(100)
                 sleep(1)
-                self.process2 = subprocess.Popen([f"./sender", '162.105.85.70', '0'])
+                self.process2 = subprocess.Popen([f"./sender", src.param_config.send_address, '0'])
 
                 flags_stdout = fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_GETFL)
                 fcntl.fcntl(self.process.stdout.fileno(), fcntl.F_SETFL, flags_stdout | os.O_NONBLOCK)

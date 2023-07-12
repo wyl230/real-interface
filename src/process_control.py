@@ -54,7 +54,7 @@ class ProcessControl:
         while timer.ms() < time_point + self.real_time - self.simulation_time:
             if self.get_cnt() % 1000 == 0:
                 logger.debug('system time: ', timer.ms(), 'point: ', time_point, 'real: ', self.real_time, 'simulation:', self.simulation_time)
-            time.sleep(0.001) 
+            time.sleep(0.1) 
             with self.cv:
                 # 此时有新的时间加入，并且早于当前的time_point, 此时应该：将当前的time_point塞回优先队列中，continue
                 if self.time_points and self.time_points[0] < time_point:
@@ -69,20 +69,25 @@ class ProcessControl:
         cur_duplex_server_port = 0
         duplex_address = 'real-data-back-chat'
         send_type = int(param.bizType)
+        double_biz = False
         if send_type == 3: # 短消息
+            double_biz = True
             cur_duplex_client_port = self.duplex_client_port[self.short_message_id]
             cur_duplex_server_port = self.duplex_server_port[self.short_message_id]
             # self.short_message_id ^= 1
             duplex_address = 'real-data-back-chat'
         elif send_type == 5: # ip电话
+            double_biz = True
             cur_duplex_client_port = 23101
             cur_duplex_server_port = 23201
             duplex_address = 'real-data-back'
         elif send_type == 6: # 网页
+            double_biz = True
             cur_duplex_client_port = 23101
             cur_duplex_server_port = 23201
             duplex_address = 'real-data-back'
         elif 11 <= send_type <= 13: # 腾讯会议
+            double_biz = True
             # cur_duplex_client_port = 22000 + (send_type % 10) * 10
             cur_duplex_client_port = 22020
             cur_duplex_server_port = 22011
@@ -92,6 +97,10 @@ class ProcessControl:
 
         headers = { "Content-Type": "application/json; charset=UTF-8", }
         r = requests.post("http://127.0.0.1:5001/set_current_ue_and_id_to_source_and_dest", headers=headers, verify=False, data=json.dumps({"ins_id": int(param.insId), "source": int(param.source), "dest": int(param.destination)}))
+        if double_biz:
+            r = requests.post("http://127.0.0.1:5001/set_current_ue_and_id_to_source_and_dest", headers=headers, verify=False, data=json.dumps({"ins_id": int(param.insId) + 100000, "source": int(param.destination), "dest": int(param.source)}))
+
+
         print('process part', r)
 
     def start_single_process(self, param, time_point):

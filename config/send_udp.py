@@ -2,7 +2,7 @@ import socket
 import time
 
 UDP_IP = "127.0.0.1"  # 目标 IP
-UDP_PORT = 22011     # 目标端口
+UDP_PORT = 23200     # 目标端口
 # UDP_PORT = 8000     # 目标端口
 
 print(UDP_IP, UDP_PORT)

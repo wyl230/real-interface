@@ -252,8 +252,8 @@ def get_service_table():
 def set_service_table(data_dict):
     # try:
     global_var.service_table = []
-    logger.info('181 service table', data_dict)
-    logger.info('182 set_id_to_source_and_dest', Status.id_to_source_and_dest)
+    logger.debug('181 service table', data_dict)
+    logger.debug('182 set_id_to_source_and_dest', Status.id_to_source_and_dest)
     data_dict = data_dict.data
     for data in data_dict:
         logger.info('qwer', get_id_to_source_and_dest(data.insId))
@@ -261,7 +261,7 @@ def set_service_table(data_dict):
         global_var.service_table.append({"ins_id": data.insId, "source_id": source_id, "dest_id": dest_id, "data": [data.throughput, data.aveDelay, data.lossRate]})
     # except Exception as e:
     #     logger.info('set_service_table', e)
-    logger.info('180 service table', global_var.service_table)
+    logger.debug('180 service table', global_var.service_table)
 
 # gf
 

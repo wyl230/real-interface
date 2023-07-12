@@ -12,7 +12,7 @@ import threading
 from loguru import logger
 import sys
 
-last_list_expand = []
+last_list_expand = {}
 
 flows_msg = {}
 packet_counting = {}
@@ -117,14 +117,13 @@ def count_discontinuous(sequence):
 def cal_loss_rate(flows_msg, ins_id, packet_num):
     # return 0
     global last_list_expand
+    if ins_id not in last_list_expand:
+        last_list_expand[ins_id] = []
     try:
         id_list = flows_msg[ins_id]['id_list']
         print("packet seqence: ", id_list)
 
-        # 计算丢包时，计算的包id 是 上一个id list没有经过计算的部分，和本次id list需要计算的部分
         save = 0.1 # 表示对于一个id list的展开版本 不会计算后 10% 部分的数据
-        startid = 0
-        # 展开id list 并进行排序
         list_expand = [] # 1-3展开的list = [1 2 3]
 
         for index in range(int(len(id_list)/3)):
@@ -135,13 +134,12 @@ def cal_loss_rate(flows_msg, ins_id, packet_num):
                 a = a + 1
             list_expand.append(b)
         list_expand.sort() # 排序
-        # print(list_expand) # 输出本次的id list
+        logger.debug(list_expand) # 输出本次的id list
         num = int(len(list_expand) * (1 - save)) # 本个list需要计算的包数 = 前 90%
-        pack_num = num + len(last_list_expand) # 本次计算的包数 = 上个list剩下的 + 本个list需要计算的
-        calcu_list = last_list_expand + list_expand[:num]
-        last_list_expand = list_expand[num:]
+        calcu_list = last_list_expand[ins_id] + list_expand[:num]
+        last_list_expand[ins_id] = list_expand[num:]
         calcu_list.sort()
-        # print('calcu', calcu_list)
+        logger.debug('calcu', calcu_list)
         loss_num = count_discontinuous(calcu_list)
         return round(loss_num / (calcu_list[-1] - calcu_list[0]) * 100, 2)
     except Exception as e:
@@ -233,6 +231,7 @@ class YourProtocol:
 
     def send_message_generate(self):
         global flows_msg
+        logger.debug('a')
 
         data_dict = []
         for insId in flows_msg:
@@ -248,15 +247,15 @@ class YourProtocol:
                     "minDelay": round(v['min_delay'] / 1000, 2),
                     "aveDelay": round(v['sum_delay'] / v['packet_num'] / 1000, 2),
                     "lossRate": cal_loss_rate(flows_msg, insId, v['packet_num']),
-                    # "throughput": round(v['byte_num'] / 2 / 1024, 2), # kB/s
                     "throughput": cal_throughput(v) * 8, # kB/s
-                    # "throughput": round(v['byte_num'] / (time.time() - last_send_time_point) / 1000, 2), # kB/s
                     "speed": -1
                 }
             ]
+        logger.debug('a')
         self.update_ins_last_send_time()
+        logger.debug('a')
         self.addDictTimeoutFlow(data_dict)
-
+        logger.debug('a')
 
         print('eva config service table ')
         data = {"data": data_dict}
@@ -264,8 +263,8 @@ class YourProtocol:
         headers = { 
             'Accept': 'application/json',
             "Content-Type": "application/json; charset=UTF-8", }
-        # r = requests.post("http://162.105.85.70:32549/set_service_table_and_evaluator_for_each", headers=headers, verify=False, data='''{"data": [{"insId": 4, "maxDelay": 232.85, "minDelay": 84.34, "aveDelay": 91.99, "lossRate": 0.0, "throughput": 21.44, "speed": -1}]}''') # todo 地址修改
-        r = requests.post("http://162.105.85.70:32549/set_service_table_and_evaluator_for_each", headers=headers, verify=False, data=json.dumps(data)) # todo 地址修改
+        r = requests.post("http://127.0.0.1:5001/set_service_table_and_evaluator_for_each", headers=headers, verify=False, data=json.dumps(data)) # todo 地址修改
+        # r = requests.post("http://162.105.85.70:32549/set_service_table_and_evaluator_for_each", headers=headers, verify=False, data=json.dumps(data)) # todo 地址修改
         print(r)
         print('eva config service table end')
 
@@ -280,6 +279,6 @@ class YourProtocol:
 
         update_flow_msg(payload)
 
-        if time.time() - last_send_time_point > 2:
+        if time.time() - last_send_time_point > 1.1:
             self.send_mqtt(self.send_message_generate())
             self.reinit()
