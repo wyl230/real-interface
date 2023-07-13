@@ -111,6 +111,7 @@ class ProcessControl:
 
     def start_single_process(self, param, time_point):
         self.change_json_by_param(param)
+        time.sleep(0.1)
         # sender
         if param.insId in self.running_sender_cpps: # 如果当前业务流正在进行，先停止该业务流 && 去掉该业务流对应的endtime
             print(f'time points before stop: {self.time_points}')
