@@ -494,25 +494,26 @@ def get_mission_info(mission_info: mission_type):
     
 @router.post('/mission_info_table')
 def get_mission_info_table(body: Empty):
-    mission_info = get_mission_info_table()
+    mission_info = config.get_mission_info()
+    logger.warning(mission_info)
     id_to_position = ["北京-中国人民大会堂", "北京-中央电视台", "上海市人民政府", "上海证券交易所", "广州市政协", "广州市人民政府", "北京-市政府", "北京-国务院", "上海国际金融中心", "上海合作组织秘书处"]
     return [{"id": i + 1, "source": '国外', "dest": id_to_position[i], "delay": mission_info.interval[i], "throughput": mission_info.throughput[i], "loss_rate": mission_info.loss[i],} for i in range(10)]
 
 @router.post('/mission_info_all')
-def get_mission_info_table(body: Empty):
-    return {"delay": [], "throughput": [], "loss_rate": []}
+def get_mission_info_all(body: Empty):
+    return config.get_mission_info_all()
 
 @router.post('/mission_info_throughput')
 def get_mission_info_throughput(body: single_id):
-    pass 
+    return config.get_mission_info_throughput(body.insId)
 
 @router.post('/mission_info_loss_rate')
 def get_mission_info_loss_rate(body: single_id):
-    pass 
+    return config.get_mission_info_loss_rate(body.insId)
 
 @router.post('/mission_info_delay')
 def get_mission_info_delay(body: single_id):
-    pass 
+    return config.get_mission_info_delay(body.insId)
 
 
 # 跨文件

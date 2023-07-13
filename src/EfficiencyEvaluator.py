@@ -123,7 +123,7 @@ def cal_loss_rate(flows_msg, ins_id, packet_num):
         id_list = flows_msg[ins_id]['id_list']
         print("packet seqence: ", id_list)
 
-        save = 0.1 # 表示对于一个id list的展开版本 不会计算后 10% 部分的数据
+        save = 0.5 # 表示对于一个id list的展开版本 不会计算后 10% 部分的数据
         list_expand = [] # 1-3展开的list = [1 2 3]
 
         for index in range(int(len(id_list)/3)):
@@ -279,6 +279,6 @@ class YourProtocol:
 
         update_flow_msg(payload)
 
-        if time.time() - last_send_time_point > 1.1:
+        if time.time() - last_send_time_point > 2.1:
             self.send_mqtt(self.send_message_generate())
             self.reinit()

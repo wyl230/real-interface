@@ -27,7 +27,6 @@ def update_id(source_id, dest_id, flow_id, type, tunnel_id=0, duplex_client_port
     os.system('cat init.json >> normal.log')
     os.system('echo \n >> normal.log')
 
-
 def update_source_module_id(source_module_id):
     file_name = 'init.json'
     with open(file_name, 'r') as f:

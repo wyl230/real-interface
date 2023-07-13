@@ -307,3 +307,15 @@ def set_mission_related_list(mission_info):
     update_display_list(mission_info.avg_interval, Mission.info_all['delay'])
     update_display_list(mission_info.avg_loss, Mission.info_all['loss_rate'])
     update_display_list(mission_info.avg_throughput, Mission.info_all['throughput'])
+
+def get_mission_info_throughput(id):
+    return Mission.throughput_single[id]
+
+def get_mission_info_loss_rate(id):
+    return Mission.loss_rate_single[id]
+
+def get_mission_info_delay(id):
+    return Mission.delay_single[id]
+
+def get_mission_info_all():
+    return {"delay": Mission.info_all['delay'], "throughput": Mission.info_all['throughput'], "loss_rate": Mission.info_all['loss_rate']}

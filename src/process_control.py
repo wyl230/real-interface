@@ -86,11 +86,17 @@ class ProcessControl:
             cur_duplex_client_port = 23101
             cur_duplex_server_port = 23201
             duplex_address = 'real-data-back'
-        elif 11 <= send_type <= 13: # 腾讯会议
+        elif 11 == send_type: # 腾讯会议
             double_biz = True
             # cur_duplex_client_port = 22000 + (send_type % 10) * 10
             cur_duplex_client_port = 22020
             cur_duplex_server_port = 22011
+            duplex_address = 'real-data-back-video'
+        elif 12 == send_type: # 腾讯会议
+            double_biz = True
+            # cur_duplex_client_port = 22000 + (send_type % 10) * 10
+            cur_duplex_client_port = 22030
+            cur_duplex_server_port = 22021
             duplex_address = 'real-data-back-video'
 
         change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType), tunnel_id=int(param.bizType), duplex_client_port=cur_duplex_client_port, duplex_server_port=cur_duplex_server_port, duplex_address=duplex_address)
