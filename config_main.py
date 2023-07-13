@@ -32,14 +32,16 @@ def main():
     put_text(f'选择了 {types[set - 1]}.')
 
     put_text(types[set - 1])
+    source_id = input.input('输入源id')
+    dest_id = input.input('输入目的id')
     if set == 1 or set == 2:
         flow_num = int(input.input(f"输入{'cbr' if set == 1 else 'vbr'}条数: "))
-        s = [f""" {{ "insId" :{ins_id}, "startTime": 2000, "endTime": 100000000000, "source": 0, "destination": 1, "bizType": "{set}"  }} """ for ins_id in range(1 + ins_id_cnt, flow_num + 1 + ins_id_cnt) ]
+        s = [f""" {{ "insId" :{ins_id}, "startTime": 2000, "endTime": 100000000000, "source": {source_id}, "destination": {dest_id}, "bizType": "{set}"  }} """ for ins_id in range(1 + ins_id_cnt, flow_num + 1 + ins_id_cnt) ]
         s = ",".join(s)
         t2 = f''' '{{ "param": [{s}] }}' '''
     elif set == 3: # 纯转发
         insId = 23023
-        s = [f""" {{ "insId" :{insId}, "startTime": 2000, "endTime": 1000000000000, "source": 9, "destination": 17, "bizType": "4"  }} """]
+        s = [f""" {{ "insId" :{insId}, "startTime": 2000, "endTime": 1000000000000, "source": {source_id}, "destination": {dest_id}, "bizType": "4"  }} """]
         s = ",".join(s)
         put_text(s)
         t2 = f'''curl -X POST -H "Content-Type: application/json" -d '{{ "param": [{s}] }}' '''
@@ -54,7 +56,7 @@ def main():
         t2 = ''' '{ "param": [{ "insId": 23001, "startTime": 2000, "endTime": 100000000, "source": 5, "destination": 7, "bizType": "3"  } ] }'  '''
 
     elif set == 7: # ip
-        t2 = ''' '{ "param": [{ "insId": 23001, "startTime": 2000, "endTime": 100000000, "source": 0, "destination": 1, "bizType": "5"  } ] }'  '''
+        t2 = ''' '{ "param": [{ "insId": 23001, "startTime": 2000, "endTime": 100000000, "source": 9, "destination": 17, "bizType": "5"  } ] }'  '''
 
     elif set == 8: # 两人腾讯会议
         # req = '{ "param": [{ "insId": 1003, "startTime": 2000, "endTime": 10000000, "source": 0, "destination": 1, "bizType": "11"}, { "insId": 1004, "startTime": 2000, "endTime": 10000000, "source": 0, "destination": 1, "bizType": "12" }, { "insId": 1005, "startTime": 2000, "endTime": 10000000, "source": 0, "destination": 1, "bizType": "13" } ] }'
@@ -63,7 +65,7 @@ def main():
     put_text(t1)
     put_text(curl_head + t2 + load_stream_address)
     os.system(t1)
-    os.system(t2)
+    os.system(curl_head + t2 + load_stream_address)
 
 
 WEB_PORT = 28188

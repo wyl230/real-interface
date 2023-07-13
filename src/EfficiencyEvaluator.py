@@ -144,7 +144,7 @@ def cal_loss_rate(flows_msg, ins_id, packet_num):
         return round(loss_num / (calcu_list[-1] - calcu_list[0]) * 100, 2)
     except Exception as e:
         print(f'loss rate error {e}')
-        return -1
+        return 0
 
 
 def cal_throughput(v):

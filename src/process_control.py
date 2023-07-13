@@ -78,8 +78,8 @@ class ProcessControl:
             duplex_address = 'real-data-back-chat'
         elif send_type == 5: # ip电话
             double_biz = True
-            cur_duplex_client_port = 23101
-            cur_duplex_server_port = 23201
+            cur_duplex_client_port = 23001
+            cur_duplex_server_port = 23002
             duplex_address = 'real-data-back'
         elif send_type == 6: # 网页
             double_biz = True
