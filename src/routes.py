@@ -20,6 +20,7 @@ import src.distribution.distribution_task_functions as func
 import threading
 import config
 from src.statics.request_format import *
+import src.param_config
 
 from src.process_control import ProcessControl 
 from src.process_control import forbidden_ids_lock, forbidden_ids
@@ -447,7 +448,7 @@ def get_routing(routing: Empty):
     data = {"data" :[ {"from_id": config.get_current_ue_to_sat(source_ue), "to_id": config.get_current_ue_to_sat(destination_ue)} for (source_ue, destination_ue) in config.get_current_ue() ]}
     logger.info(f'send to gf request: {data}')
     try:
-        r = requests.post("http://162.105.85.120:5001/xw/param/routing_config", headers=headers, verify=False, data=json.dumps(data))
+        r = requests.post(f"http://{src.param_config.sat_routing_address}:5001/xw/param/routing_config", headers=headers, verify=False, data=json.dumps(data))
     except:
         return []
 
@@ -463,7 +464,7 @@ def get_start_time(body: Empty):
     # query for start time
     headers = { "Content-Type": "application/json; charset=UTF-8", }
     try:
-        r = requests.post("http://162.105.85.120:5001/xw/param/time_config", headers=headers, verify=False, data={})
+        r = requests.post(f"http://{src.param_config.sat_routing_address}:5001/xw/param/time_config", headers=headers, verify=False, data={})
 
     except Exception as e:
         # print('start time', e)
