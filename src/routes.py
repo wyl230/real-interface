@@ -552,3 +552,19 @@ def set_current_ue_and_id_to_source_and_dest(body: set_current_ue_and_id_to_sour
     config.set_id_to_source_and_dest(body.ins_id, body.source, body.dest)
     print('set_current_ue_and_id_to_source_and_dest ok')
     return {"status": True}
+
+    
+import src.statics.ue_event
+
+@router.post('/ue_event')
+def set_ue_event(body: UE_events):
+    src.statics.ue_event.set_ue_event(body)
+    logger.warning(body)
+    return {"status": True}
+
+@router.post('/ue_events')
+def get_ue_events(body: Empty):
+    return src.statics.ue_event.get_ue_events()
+
+    
+# 设置等比特流速率

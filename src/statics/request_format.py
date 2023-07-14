@@ -68,3 +68,11 @@ class mission_type(BaseModel):
     avg_interval: int
     avg_loss: int
     avg_throughput: int
+
+class UE_events(BaseModel):
+    event: int
+    time: float
+    ue_id: int
+    session_dst_ue_id: int 
+    access_sat_id: int 
+    switch_sat_id: int

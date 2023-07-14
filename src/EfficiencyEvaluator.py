@@ -279,6 +279,6 @@ class YourProtocol:
 
         update_flow_msg(payload)
 
-        if time.time() - last_send_time_point > 2.1:
+        if time.time() - last_send_time_point > 2:
             self.send_mqtt(self.send_message_generate())
             self.reinit()
