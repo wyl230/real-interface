@@ -6,6 +6,7 @@ logger.add(sys.stderr, level='INFO')  # 只输出警告以上的日志
 
 class global_var:
     '''需要定义全局变量的放在这里，最好定义一个初始值'''
+    headers = { "Content-Type": "application/json; charset=UTF-8", }
     name = 'my_name'
     server = None
     local_mqtt = False
@@ -20,7 +21,7 @@ class global_var:
     accumulate_ue_uplink = {}
     accumulate_ue_downlink = {}
     ## sat
-    sat_status = []
+    sat_status = {}
     sat_link = {}
     # double id 
     accumulate_sat_uplink = {}
@@ -61,6 +62,11 @@ class Mission:
 def set_id_to_source_and_dest(ins_id, source_id, destination_id):
     Status.id_to_source_and_dest[ins_id] = (source_id, destination_id)
     logger.info(f'set_id_to_source_and_dest {Status.id_to_source_and_dest}')
+
+def del_id_to_source_and_dest(ins_id, source_id, destination_id):
+    if Status.id_to_source_and_dest[ins_id] == (source_id, destination_id) or source_id == -1:
+        Status.id_to_source_and_dest.pop(ins_id)
+        logger.info(f'del_id_to_source_and_dest {Status.id_to_source_and_dest}')
 
 def get_id_to_source_and_dest(ins_id):
     return Status.id_to_source_and_dest[ins_id]
@@ -142,12 +148,14 @@ def get_sat_downlink(sat_id):
     return get_diff_list(global_var.accumulate_sat_downlink[sat_id], divider= 1024 / 8)
 
 def get_sat_status():
-    return global_var.ue_status
+    return global_var.sat_status
 
 def set_sat_status(sat_status):
     global_var.sat_total_downlink[sat_status.id] = sat_status.total_down_bandwidth
     global_var.sat_total_uplink[sat_status.id] = sat_status.total_up_bandwidth
+    global_var.sat_status[sat_status.id] = sat_status
     return # todo 不需要存储相关信息
+    global_var.sat_status[sat_status.id] = sat_status
     global_var.sat_status.append(sat_status)
     should_remove = [sat for sat in global_var.sat_status if time.time() - sat.time > 5]
     for sat in should_remove:
@@ -296,6 +304,9 @@ def get_current_ue():
 def set_current_ue(source, destination):
     Status.current_source_and_destination.append((source, destination))
 
+def del_current_ue(source, destination):
+    Status.current_source_and_destination.remove((source, destination))
+
 # ue to sat
 def set_current_ue_to_sat(ue_status):
     Status.current_ue_to_sat[ue_status.id] = ue_status.access_sat
@@ -332,5 +343,5 @@ def get_mission_info_all():
     return {"delay": Mission.info_all['delay'], "throughput": Mission.info_all['throughput'], "loss_rate": Mission.info_all['loss_rate']}
 
 
-def get_timestamp_list(length):
-    return [round(time.time()) - 2 * (length - 1 - i)  for i in range(length)]
+def get_timestamp_list(length, time):
+    return [time - 2 * (length - 1 - i)  for i in range(length)]

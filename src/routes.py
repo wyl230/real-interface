@@ -26,6 +26,7 @@ from src.process_control import ProcessControl
 from src.process_control import forbidden_ids_lock, forbidden_ids
 
 start_send_delay_ok = False
+last_data_generate_time = 0
 
 def start_send_delay():
     global start_send_delay_ok
@@ -144,7 +145,8 @@ def stopStream(body: single_id):
     # todo 删除对应的time_point中的mmap映射的param，同时停止进程
     # todo 访问loadstream，及时停止 
     headers = { "Content-Type": "application/json; charset=UTF-8", }
-    requests.post("http://127.0.0.1:5001/simulation/loadStream", headers=headers, verify=False, data={"param": [ { "insId" : body.insId , "startTime": 0, "endTime": 0, "source": 153, "destination": 283, "bizType": "1"  } ]})
+    r = requests.post("http://127.0.0.1:5001/simulation/loadStream", headers=headers, verify=False, data=json.dumps({"param": [ { "insId" : body.insId , "startTime": 0, "endTime": 0, "source": -1, "destination": -1, "bizType": "1"  } ]}))
+    print(r.text)
 
     return {
         "code": 1,
@@ -362,7 +364,7 @@ def test_data(request_body: Empty):
 @router.post("/throughput_all")
 def throughput_all(request_body: Empty):
     data = config.get_throughput_all()
-    time_stamp_list = config.get_timestamp_list(len(data))
+    time_stamp_list = config.get_timestamp_list(len(data), last_data_generate_time)
     return {"data": data, "time": time_stamp_list}
 
 @router.post("/delay_single")
@@ -371,19 +373,19 @@ def throughput_all(request_body: single_id):
         "avg": config.get_avg_delay(request_body.insId),
         "min": config.get_min_delay(request_body.insId),
         "max": config.get_max_delay(request_body.insId),
-        "time": config.get_timestamp_list(len(config.get_min_delay(request_body.insId)))
+        "time": config.get_timestamp_list(len(config.get_min_delay(request_body.insId)), last_data_generate_time)
     }
 
 @router.post("/loss_rate")
 def get_loss_rate(request_body: single_id):
     data = config.get_loss_rate(request_body.insId)
-    time_stamp_list = config.get_timestamp_list(len(data))
+    time_stamp_list = config.get_timestamp_list(len(data), last_data_generate_time)
     return {"data": data, "time": time_stamp_list}
 
 @router.post("/throughput")
 def get_throughput(request_body: single_id):
     data = config.get_throughput(request_body.insId)
-    time_stamp_list = config.get_timestamp_list(len(data))
+    time_stamp_list = config.get_timestamp_list(len(data), last_data_generate_time)
     return {"data": data, "time": time_stamp_list}
 
 @router.post("/service_table")
@@ -430,12 +432,42 @@ def get_sat_link_recv(body: double_sat_id):
 def get_ue_downlink_band(body: single_sat_id):
     return config.get_sat_link(body.sat_id)
 
-@router.post("/sat_total_uplink")
+# 以下两个接口，从收发，变为 星地 星间
+@router.post("/sat_total_send")
 def get_sat_total_uplink(body: single_sat_id):
+    print('qwerqwerqwerqwer')
+    neighbor_sats = config.get_sat_link(body.sat_id)
+    sat_total_link_forward = sum([config.get_sat_link_forward(body.sat_id, neighbor_sat)[-1] for neighbor_sat in neighbor_sats])
+    sat_uplink = config.get_sat_uplink(body.sat_id)[-1]
+
+    bandwidth = config.get_sat_status()[body.sat_id].neighbor_sat[0].bandwidth
+    max_neighbor = bandwidth / 1024 # bps 
+    max_ue = config.get_sat_total_uplink(body.sat_id) / 1024
+
+    logger.warning(sat_total_link_forward)
+    logger.warning(sat_uplink)
+    logger.warning(max_neighbor)
+    logger.warning(max_ue)
+    logger.warning('-------------------')
+    
+    return { "data": (sat_total_link_forward + sat_uplink) / (max_neighbor + max_ue) }
     return { "data": 1024 * config.get_sat_uplink(body.sat_id)[-1] / config.get_sat_total_uplink(body.sat_id)}
    
-@router.post("/sat_total_downlink")
+@router.post("/sat_total_recv")
 def get_sat_total_downlink(body: single_sat_id):
+    neighbor_sats = config.get_sat_link(body.sat_id)
+    sat_total_link_recv = sum([config.get_sat_link_recv(body.sat_id, neighbor_sat)[-1] for neighbor_sat in neighbor_sats])
+    sat_downlink = config.get_sat_downlink(body.sat_id)[-1]
+
+    bandwidth = config.get_sat_status()[body.sat_id].neighbor_sat[0].bandwidth
+    max_neighbor = bandwidth / 1024 # bps 
+    max_ue = config.get_sat_total_downlink(body.sat_id) / 1024
+    logger.warning(sat_total_link_recv)
+    logger.warning(sat_downlink)
+    logger.warning(max_neighbor)
+    logger.warning(max_ue)
+
+    return { "data": (sat_total_link_recv + sat_downlink) / (max_neighbor + max_ue) }
     return { "data": 1024 * config.get_sat_downlink(body.sat_id)[-1] / config.get_sat_total_downlink(body.sat_id)  }
 
 # wj
@@ -569,6 +601,13 @@ def set_current_ue_and_id_to_source_and_dest(body: set_current_ue_and_id_to_sour
     print('set_current_ue_and_id_to_source_and_dest ok')
     return {"status": True}
 
+@router.post('/del_current_ue_and_id_to_source_and_dest')
+def set_current_ue_and_id_to_source_and_dest(body: set_current_ue_and_id_to_source_and_dest_class):
+    print('del_current_ue_and_id_to_source_and_dest before')
+    config.del_current_ue(body.source, body.dest)
+    config.del_id_to_source_and_dest(body.ins_id, body.source, body.dest)
+    print('del_current_ue_and_id_to_source_and_dest ok')
+    return {"status": True}
     
 import src.statics.ue_event
 
@@ -601,3 +640,12 @@ def get_delay_test_table(body: DelayTest):
 @router.post('/delay_test_table')
 def get_delay_test_table():
     return delay_test_config.get()
+
+class time_class(BaseModel):
+    time: int
+
+@router.post('/get_last_data_generate_time')
+def get_delay_test_table(body: time_class):
+    global last_data_generate_time
+    last_data_generate_time = time_class.time
+    return {"1": 1}

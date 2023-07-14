@@ -102,6 +102,10 @@ class ProcessControl:
         change_json.update_id(int(param.source), int(param.destination), int(param.insId), int(param.bizType), tunnel_id=int(param.bizType), duplex_client_port=cur_duplex_client_port, duplex_server_port=cur_duplex_server_port, duplex_address=duplex_address)
 
         headers = { "Content-Type": "application/json; charset=UTF-8", }
+
+        if param.insId in self.running_sender_cpps: # 如果当前业务流正在进行，去掉当前业务流的信息
+            r = requests.post("http://127.0.0.1:5001/del_current_ue_and_id_to_source_and_dest", headers=config.global_var.headers, verify=False, data=json.dumps({"ins_id": int(param.insId), "source": int(param.source), "dest": int(param.destination)}))
+
         r = requests.post("http://127.0.0.1:5001/set_current_ue_and_id_to_source_and_dest", headers=headers, verify=False, data=json.dumps({"ins_id": int(param.insId), "source": int(param.source), "dest": int(param.destination)}))
         if double_biz:
             r = requests.post("http://127.0.0.1:5001/set_current_ue_and_id_to_source_and_dest", headers=headers, verify=False, data=json.dumps({"ins_id": int(param.insId) + 100000, "source": int(param.destination), "dest": int(param.source)}))

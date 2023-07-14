@@ -6,6 +6,7 @@ def set_ue_event(event):
 
 def get_ue_events():
     cur_events = ue_events.events[:]
-    ue_events.events.clear()
+    if len(ue_events.events) > 20:
+        ue_events.events = ue_events.events[-20:]
     return cur_events
     

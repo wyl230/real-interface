@@ -282,4 +282,10 @@ class YourProtocol:
 
         if time.time() - last_send_time_point > 2:
             self.send_mqtt(self.send_message_generate())
+
+            headers = { 
+                'Accept': 'application/json',
+                "Content-Type": "application/json; charset=UTF-8", }
+            r = requests.post("http://127.0.0.1:5001/get_last_data_generate_time", headers=headers, verify=False, data=json.dumps({"time": round(time.time())})) # todo 地址修改
+
             self.reinit()
