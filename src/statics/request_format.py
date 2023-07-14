@@ -82,3 +82,9 @@ class UE_events(BaseModel):
 class SetCBRRate(BaseModel):
     pps: int
     packet_size: int
+
+class DelayTest(BaseModel):
+    start_id: List[int]
+    end_id: List[int]
+    set_delay: List[int]
+    real_delay: List[int]

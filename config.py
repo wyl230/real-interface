@@ -330,3 +330,7 @@ def get_mission_info_delay(id):
 
 def get_mission_info_all():
     return {"delay": Mission.info_all['delay'], "throughput": Mission.info_all['throughput'], "loss_rate": Mission.info_all['loss_rate']}
+
+
+def get_timestamp_list(length):
+    return [round(time.time()) - 2 * (length - 1 - i)  for i in range(length)]

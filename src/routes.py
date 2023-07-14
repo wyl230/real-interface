@@ -361,7 +361,9 @@ def test_data(request_body: Empty):
 
 @router.post("/throughput_all")
 def throughput_all(request_body: Empty):
-    return config.get_throughput_all()
+    data = config.get_throughput_all()
+    time_stamp_list = config.get_timestamp_list(len(data))
+    return {"data": data, "time": time_stamp_list}
 
 @router.post("/delay_single")
 def throughput_all(request_body: single_id):
@@ -369,15 +371,20 @@ def throughput_all(request_body: single_id):
         "avg": config.get_avg_delay(request_body.insId),
         "min": config.get_min_delay(request_body.insId),
         "max": config.get_max_delay(request_body.insId),
+        "time": config.get_timestamp_list(len(config.get_min_delay(request_body.insId)))
     }
 
 @router.post("/loss_rate")
 def get_loss_rate(request_body: single_id):
-    return config.get_loss_rate(request_body.insId)
+    data = config.get_loss_rate(request_body.insId)
+    time_stamp_list = config.get_timestamp_list(len(data))
+    return {"data": data, "time": time_stamp_list}
 
 @router.post("/throughput")
 def get_throughput(request_body: single_id):
-    return config.get_throughput(request_body.insId)
+    data = config.get_throughput(request_body.insId)
+    time_stamp_list = config.get_timestamp_list(len(data))
+    return {"data": data, "time": time_stamp_list}
 
 @router.post("/service_table")
 def get_service_table(request_body: Empty):
@@ -425,11 +432,11 @@ def get_ue_downlink_band(body: single_sat_id):
 
 @router.post("/sat_total_uplink")
 def get_sat_total_uplink(body: single_sat_id):
-    return { "data": config.get_sat_total_uplink(body.sat_id) }
-
+    return { "data": 1024 * config.get_sat_uplink(body.sat_id)[-1] / config.get_sat_total_uplink(body.sat_id)}
+   
 @router.post("/sat_total_downlink")
 def get_sat_total_downlink(body: single_sat_id):
-    return { "data": config.get_sat_total_downlink(body.sat_id) }
+    return { "data": 1024 * config.get_sat_downlink(body.sat_id)[-1] / config.get_sat_total_downlink(body.sat_id)  }
 
 # wj
 @router.post("/ue_status")
@@ -504,8 +511,9 @@ def get_mission_info(mission_info: mission_type):
 @router.post('/mission_info_table')
 def get_mission_info_table(body: Empty):
     mission_info = config.get_mission_info()
-    logger.warning(mission_info)
-    id_to_position = ["北京-中国人民大会堂", "北京-中央电视台", "上海市人民政府", "上海证券交易所", "广州市政协", "广州市人民政府", "北京-市政府", "北京-国务院", "上海国际金融中心", "上海合作组织秘书处"]
+    # logger.warning(mission_info)
+    id_to_position = ["北京-外交部", "北京-国务院", "上海经合组织", "上海国际金融中心", "广州-中国海关", "广州-南方电网", "北京-商务部", "北京-新华社", "上海证券交易所", "上海招商局"]
+    # id_to_position = ["北京-中国人民大会堂", "北京-中央电视台", "上海市人民政府", "上海证券交易所", "广州市政协", "广州市人民政府", "北京-市政府", "北京-国务院", "上海国际金融中心", "上海合作组织秘书处"]
     return [{"id": i + 1, "source": '国外', "dest": id_to_position[i], "delay": mission_info.interval[i], "throughput": mission_info.throughput[i], "loss_rate": mission_info.loss[i],} for i in range(10)]
 
 @router.post('/mission_info_all')
@@ -567,7 +575,7 @@ import src.statics.ue_event
 @router.post('/ue_event')
 def set_ue_event(body: UE_events):
     src.statics.ue_event.set_ue_event(body)
-    logger.warning(body)
+    # logger.warning(body)
     return {"status": True}
 
 @router.post('/ue_events')
@@ -583,11 +591,13 @@ def set_cbr_rate(body: SetCBRRate):
     src.settings.rate_set.set_cbr_rate(pps=body.pps, packet_size=body.packet_size)
     return {"status": True}
 
+
+import src.configs.delay_test_config as delay_test_config
 @router.post('/delay_test')
+def get_delay_test_table(body: DelayTest):
+    delay_test_config.set(body)
+    return {"status": True}
+
+@router.post('/delay_test_table')
 def get_delay_test_table():
-    return {
-        "start_id": 1,
-        "end_id": 1,
-        "set_delay": 1,
-        "real_delay": 1,
-    }
+    return delay_test_config.get()

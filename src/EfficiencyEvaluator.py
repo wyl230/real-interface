@@ -8,6 +8,7 @@ import config
 import threading
 
 # speed
+sender_once_time = 1.9
 
 from loguru import logger
 import sys
@@ -153,7 +154,7 @@ def cal_throughput(v):
     for pod_id in filter(lambda x: len(x) > 50, v):
         byte_num += v[pod_id]['byte_num']
 
-    return round(byte_num / 1 / 1024, 2)
+    return round(byte_num / 1 / 1024 / sender_once_time, 2)
 
 def update_flow_msg(payload):
     global total_bytes
