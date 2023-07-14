@@ -423,6 +423,14 @@ def get_sat_link_recv(body: double_sat_id):
 def get_ue_downlink_band(body: single_sat_id):
     return config.get_sat_link(body.sat_id)
 
+@router.post("/sat_total_uplink")
+def get_sat_total_uplink(body: single_sat_id):
+    return { "data": config.get_sat_total_uplink(body.sat_id) }
+
+@router.post("/sat_total_downlink")
+def get_sat_total_downlink(body: single_sat_id):
+    return { "data": config.get_sat_total_downlink(body.sat_id) }
+
 # wj
 @router.post("/ue_status")
 def get_ue_status(ue_status: UeStatus):
@@ -566,5 +574,20 @@ def set_ue_event(body: UE_events):
 def get_ue_events(body: Empty):
     return src.statics.ue_event.get_ue_events()
 
+
     
+import src.settings.rate_set
 # 设置等比特流速率
+@router.post('/set_cbr_rate')
+def set_cbr_rate(body: SetCBRRate):
+    src.settings.rate_set.set_cbr_rate(pps=body.pps, packet_size=body.packet_size)
+    return {"status": True}
+
+@router.post('/delay_test')
+def get_delay_test_table():
+    return {
+        "start_id": 1,
+        "end_id": 1,
+        "set_delay": 1,
+        "real_delay": 1,
+    }

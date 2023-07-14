@@ -49,6 +49,8 @@ class SatStatus(BaseModel):
     total_down_packet: int
     total_up_byte: int
     total_down_byte: int
+    total_up_bandwidth: int
+    total_down_bandwidth: int
 
 # 
 class single_ue_id(BaseModel):
@@ -76,3 +78,7 @@ class UE_events(BaseModel):
     session_dst_ue_id: int 
     access_sat_id: int 
     switch_sat_id: int
+
+class SetCBRRate(BaseModel):
+    pps: int
+    packet_size: int

@@ -13,18 +13,21 @@ class global_var:
 
     list_length = 12
 
-    # ue
+    ## ue
     ue_status = []
     ue_uplink_band = {}
     ue_downlink_band = {}
     accumulate_ue_uplink = {}
     accumulate_ue_downlink = {}
-    # sat
+    ## sat
     sat_status = []
     sat_link = {}
     # double id 
     accumulate_sat_uplink = {}
     accumulate_sat_downlink = {}
+    sat_total_uplink = {}
+    sat_total_downlink = {}
+
     # evaluation
     throughput_all = []
     max_delay = {}
@@ -142,6 +145,8 @@ def get_sat_status():
     return global_var.ue_status
 
 def set_sat_status(sat_status):
+    global_var.sat_total_downlink[sat_status.id] = sat_status.total_down_bandwidth
+    global_var.sat_total_uplink[sat_status.id] = sat_status.total_up_bandwidth
     return # todo 不需要存储相关信息
     global_var.sat_status.append(sat_status)
     should_remove = [sat for sat in global_var.sat_status if time.time() - sat.time > 5]
@@ -149,6 +154,12 @@ def set_sat_status(sat_status):
         global_var.sat_status.remove(sat)
 
     # todo global_var.sat_status = sat_status 
+
+def get_sat_total_uplink(sat_id):
+    return global_var.sat_total_uplink[sat_id]
+
+def get_sat_total_downlink(sat_id):
+    return global_var.sat_total_downlink[sat_id]
 
 def check_list_using_list(id_list, list_list):
     for id, list in zip(id_list, list_list):
