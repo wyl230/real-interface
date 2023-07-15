@@ -105,6 +105,7 @@ class ProcessControl:
 
         if param.insId in self.running_sender_cpps: # 如果当前业务流正在进行，去掉当前业务流的信息
             r = requests.post("http://127.0.0.1:5001/del_current_ue_and_id_to_source_and_dest", headers=config.global_var.headers, verify=False, data=json.dumps({"ins_id": int(param.insId), "source": int(param.source), "dest": int(param.destination)}))
+            time.sleep(1)
 
         r = requests.post("http://127.0.0.1:5001/set_current_ue_and_id_to_source_and_dest", headers=headers, verify=False, data=json.dumps({"ins_id": int(param.insId), "source": int(param.source), "dest": int(param.destination)}))
         if double_biz:

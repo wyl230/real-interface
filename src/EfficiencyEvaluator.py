@@ -276,16 +276,25 @@ class YourProtocol:
 
         msg = data.decode('utf-8')
         payload = json.loads(msg) # 一个pod的传输信息
+
+        logger.info(f'receive data from pku-server: {payload}')
+
         logger.debug(f'{time.time()} {payload}') # 1686895530.5503228 {'1': {'byte_num': 6936, 'id_list': [4265, 4266, 4267, 4268, 4269, 4270, 4271, 4272, 4273, 4274, 4275, 4276, 4277, 4278, 4279, 4280, 4281, 4282, 4283, 4284, 4285], 'last_min_max_delay_record': 1686895530, 'loss_rate': 0, 'max_delay': 141, 'max_packet_id': 4285, 'min_delay': 85, 'packet_num': 43, 'pod_id': '{}p[VOjCj%%"):DuBIOkAy^,X/)4[ZQdY9tN\\N^BLX6nG*==mAw[3p"!x%&OxP"p', 'sum_delay': 4457, 'total_packet_num': 43}, '2': {'byte_num': 1496, 'id_list': [2, 3, 1, 2], 'last_min_max_delay_record': 1686895298, 'loss_rate': 0, 'max_delay': 279, 'max_packet_id': 3, 'min_delay': 121, 'packet_num': 9, 'pod_id': '{}p[VOjCj%%"):DuBIOkAy^,X/)4[ZQdY9tN\\N^BLX6nG*==mAw[3p"!x%&OxP"p', 'sum_delay': 1562, 'total_packet_num': 9}, 
 
-        update_flow_msg(payload)
+        try:
+            update_flow_msg(payload)
+        except Exception as e:
+            logger.error(f'update_flow_msg error: {e}')
 
         if time.time() - last_send_time_point > 2:
-            self.send_mqtt(self.send_message_generate())
+            try:
+                self.send_mqtt(self.send_message_generate())
 
-            headers = { 
-                'Accept': 'application/json',
-                "Content-Type": "application/json; charset=UTF-8", }
-            r = requests.post("http://127.0.0.1:5001/get_last_data_generate_time", headers=headers, verify=False, data=json.dumps({"time": round(time.time())})) # todo 地址修改
+                headers = { 
+                    'Accept': 'application/json',
+                    "Content-Type": "application/json; charset=UTF-8", }
+                r = requests.post("http://127.0.0.1:5001/get_last_data_generate_time", headers=headers, verify=False, data=json.dumps({"time": round(time.time())})) # todo 地址修改
 
-            self.reinit()
+                self.reinit()
+            except Exception as e:
+                logger.error(f"can't send mqtt: {e}")

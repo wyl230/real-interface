@@ -435,7 +435,7 @@ def get_ue_downlink_band(body: single_sat_id):
 @router.post("/sat_total_status")
 def get_sat_total_send(body: single_sat_id):
     # [上收 下发 星收 星发]
-    logger.warning(config.get_sat_status())
+    # logger.warning(config.get_sat_status())
     single_sat = config.get_single_sat_status(body.sat_id)
     ue_recv = (config.get_sat_uplink(body.sat_id)[-1] / single_sat.total_up_bandwidth) if single_sat.total_up_bandwidth > 0 else 0
     ue_send = (config.get_sat_downlink(body.sat_id)[-1] / single_sat.total_down_bandwidth) if single_sat.total_down_bandwidth > 0 else 0
@@ -458,11 +458,11 @@ def get_sat_total_uplink(body: single_sat_id):
     max_neighbor = bandwidth / 1024 # bps 
     max_ue = config.get_sat_total_uplink(body.sat_id) / 1024
 
-    logger.warning(sat_total_link_forward)
-    logger.warning(sat_uplink)
-    logger.warning(max_neighbor)
-    logger.warning(max_ue)
-    logger.warning('-------------------')
+    # logger.warning(sat_total_link_forward)
+    # logger.warning(sat_uplink)
+    # logger.warning(max_neighbor)
+    # logger.warning(max_ue)
+    # logger.warning('-------------------')
     
     return { "data": (sat_total_link_forward + sat_uplink) / (max_neighbor + max_ue) }
     return { "data": 1024 * config.get_sat_uplink(body.sat_id)[-1] / config.get_sat_total_uplink(body.sat_id)}
@@ -476,10 +476,10 @@ def get_sat_total_downlink(body: single_sat_id):
     bandwidth = config.get_sat_status()[body.sat_id].neighbor_sat[0].bandwidth
     max_neighbor = bandwidth / 1024 # bps 
     max_ue = config.get_sat_total_downlink(body.sat_id) / 1024
-    logger.warning(sat_total_link_recv)
-    logger.warning(sat_downlink)
-    logger.warning(max_neighbor)
-    logger.warning(max_ue)
+    # logger.warning(sat_total_link_recv)
+    # logger.warning(sat_downlink)
+    # logger.warning(max_neighbor)
+    # logger.warning(max_ue)
 
     return { "data": (sat_total_link_recv + sat_downlink) / (max_neighbor + max_ue) }
     return { "data": 1024 * config.get_sat_downlink(body.sat_id)[-1] / config.get_sat_total_downlink(body.sat_id)  }
@@ -506,7 +506,7 @@ def get_sat_status(sat_status: SatStatus):
 def get_routing(routing: Empty):
     logger.warning(config.get_current_ue())
     headers = { "Content-Type": "application/json; charset=UTF-8", }
-    data = {"data" :[ {"from_id": config.get_current_ue_to_sat(source_ue), "to_id": config.get_current_ue_to_sat(destination_ue)} for (source_ue, destination_ue) in config.get_current_ue() ]}
+    data = {"data" :[ {"from_id": config.get_current_ue_to_sat(source_ue), "to_id": config.get_current_ue_to_sat(destination_ue)} for (source_ue, destination_ue) in config.get_current_ue() if source_ue != -1]}
     logger.info(f'send to gf request: {data}')
     try:
         r = requests.post(f"http://{src.param_config.sat_routing_address}:5001/xw/param/routing_config", headers=headers, verify=False, data=json.dumps(data))
@@ -560,7 +560,10 @@ def get_mission_info_table(body: Empty):
     # logger.warning(mission_info)
     id_to_position = ["北京-外交部", "北京-国务院", "上海经合组织", "上海国际金融中心", "广州-中国海关", "广州-南方电网", "北京-商务部", "北京-新华社", "上海证券交易所", "上海招商局"]
     # id_to_position = ["北京-中国人民大会堂", "北京-中央电视台", "上海市人民政府", "上海证券交易所", "广州市政协", "广州市人民政府", "北京-市政府", "北京-国务院", "上海国际金融中心", "上海合作组织秘书处"]
-    return [{"id": i + 1, "source": '国外', "dest": id_to_position[i], "delay": mission_info.interval[i], "throughput": mission_info.throughput[i], "loss_rate": mission_info.loss[i],} for i in range(10)]
+    try:
+        return [{"id": i + 1, "source": '国外', "dest": id_to_position[i], "delay": mission_info.interval[i], "throughput": mission_info.throughput[i], "loss_rate": mission_info.loss[i],} for i in range(10)]
+    except AttributeError:
+        return []
 
 @router.post('/mission_info_all')
 def get_mission_info_all(body: Empty):
@@ -661,5 +664,6 @@ class time_class(BaseModel):
 @router.post('/get_last_data_generate_time')
 def get_delay_test_table(body: time_class):
     global last_data_generate_time
-    last_data_generate_time = time_class.time
+    last_data_generate_time = body.time
+    logger.error(last_data_generate_time)
     return {"1": 1}
