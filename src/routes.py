@@ -432,6 +432,21 @@ def get_sat_link_recv(body: double_sat_id):
 def get_ue_downlink_band(body: single_sat_id):
     return config.get_sat_link(body.sat_id)
 
+@router.post("/sat_total_status")
+def get_sat_total_send(body: single_sat_id):
+    # [上收 下发 星收 星发]
+    single_sat = config.get_single_sat_status(body.sat_id)
+    ue_recv = config.get_sat_uplink(body.sat_id)[-1] / single_sat.total_up_byte
+    ue_send = config.get_sat_downlink(body.sat_id)[-1] / single_sat.total_down_byte
+
+    neighbor_sats = config.get_sat_link(body.sat_id)
+
+    sat_recv = sum([config.get_sat_link_recv(body.sat_id, neighbor_sat)[-1] for neighbor_sat in neighbor_sats]) / config.get_sat_status()[body.sat_id].neighbor_sat[0].bandwidth
+    sat_send = sum([config.get_sat_link_forward(body.sat_id, neighbor_sat)[-1] for neighbor_sat in neighbor_sats]) / config.get_sat_status()[body.sat_id].neighbor_sat[0].bandwidth
+
+    return [ue_recv, ue_send, sat_recv, sat_send]
+    
+# 以下两个接口废弃
 @router.post("/sat_total_send")
 def get_sat_total_uplink(body: single_sat_id):
     neighbor_sats = config.get_sat_link(body.sat_id)

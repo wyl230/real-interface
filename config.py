@@ -147,6 +147,9 @@ def get_sat_downlink(sat_id):
     check_id_exists_or_create_blank_list(sat_id, global_var.accumulate_sat_downlink)
     return get_diff_list(global_var.accumulate_sat_downlink[sat_id], divider= 1024 / 8)
 
+def get_single_sat_status(sat_id):
+    return global_var.sat_status[sat_id]
+
 def get_sat_status():
     return global_var.sat_status
 
