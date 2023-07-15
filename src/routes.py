@@ -435,9 +435,10 @@ def get_ue_downlink_band(body: single_sat_id):
 @router.post("/sat_total_status")
 def get_sat_total_send(body: single_sat_id):
     # [上收 下发 星收 星发]
+    logger.warning(config.get_sat_status())
     single_sat = config.get_single_sat_status(body.sat_id)
-    ue_recv = config.get_sat_uplink(body.sat_id)[-1] / single_sat.total_up_byte
-    ue_send = config.get_sat_downlink(body.sat_id)[-1] / single_sat.total_down_byte
+    ue_recv = (config.get_sat_uplink(body.sat_id)[-1] / single_sat.total_up_bandwidth) if single_sat.total_up_bandwidth > 0 else 0
+    ue_send = (config.get_sat_downlink(body.sat_id)[-1] / single_sat.total_down_bandwidth) if single_sat.total_down_bandwidth > 0 else 0
 
     neighbor_sats = config.get_sat_link(body.sat_id)
 
@@ -503,7 +504,7 @@ def get_sat_status(sat_status: SatStatus):
 # gf
 @router.post("/routing")
 def get_routing(routing: Empty):
-    print(config.get_current_ue)
+    logger.warning(config.get_current_ue())
     headers = { "Content-Type": "application/json; charset=UTF-8", }
     data = {"data" :[ {"from_id": config.get_current_ue_to_sat(source_ue), "to_id": config.get_current_ue_to_sat(destination_ue)} for (source_ue, destination_ue) in config.get_current_ue() ]}
     logger.info(f'send to gf request: {data}')
