@@ -40,7 +40,6 @@ class neighbor_sat(BaseModel):
     receive_byte: int
     bandwidth: int
 
-# 星地*2 星间*2
 class SatStatus(BaseModel):
     type: str
     id: int

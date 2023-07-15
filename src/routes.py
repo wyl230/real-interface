@@ -432,10 +432,8 @@ def get_sat_link_recv(body: double_sat_id):
 def get_ue_downlink_band(body: single_sat_id):
     return config.get_sat_link(body.sat_id)
 
-# 以下两个接口，从收发，变为 星地 星间
 @router.post("/sat_total_send")
 def get_sat_total_uplink(body: single_sat_id):
-    print('qwerqwerqwerqwer')
     neighbor_sats = config.get_sat_link(body.sat_id)
     sat_total_link_forward = sum([config.get_sat_link_forward(body.sat_id, neighbor_sat)[-1] for neighbor_sat in neighbor_sats])
     sat_uplink = config.get_sat_uplink(body.sat_id)[-1]

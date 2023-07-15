@@ -34,7 +34,10 @@ def update_source_module_id(source_module_id):
 
     data['source_module_id'] = source_module_id
 
-    data['flow_id'] += 100000 if source_module_id == 100 else 0
+    if source_module_id == 100:
+        data['flow_id'] += 100000
+        source_id, dest_id = data['source_id'], data['dest_id']
+        data['source_id'], data['dest_id'] = dest_id, source_id 
     os.system(f'echo source module id {source_module_id}\n >> double.log')
     with open(file_name, 'w') as f: 
         json.dump(data, f)
