@@ -6,6 +6,7 @@ import json
 import requests
 import config
 import threading
+from src.statics.loss_rate import cal_loss_rate_using_compressed_packed_id
 
 # speed
 sender_once_time = 1.9
@@ -122,6 +123,7 @@ def cal_loss_rate(flows_msg, ins_id, packet_num):
         last_list_expand[ins_id] = []
     try:
         id_list = flows_msg[ins_id]['id_list']
+        return cal_loss_rate_using_compressed_packed_id(id_list, ins_id, divider=True)
         print("packet seqence: ", id_list)
 
         save = 0.5 # 表示对于一个id list的展开版本 不会计算后 10% 部分的数据
@@ -264,8 +266,7 @@ class YourProtocol:
         headers = { 
             'Accept': 'application/json',
             "Content-Type": "application/json; charset=UTF-8", }
-        r = requests.post("http://127.0.0.1:5001/set_service_table_and_evaluator_for_each", headers=headers, verify=False, data=json.dumps(data)) # todo 地址修改
-        # r = requests.post("http://162.105.85.70:32549/set_service_table_and_evaluator_for_each", headers=headers, verify=False, data=json.dumps(data)) # todo 地址修改
+        r = requests.post("http://statistical-service-service:5001/set_service_table_and_evaluator_for_each", headers=headers, verify=False, data=json.dumps(data)) # todo 地址修改
         print(r)
         print('eva config service table end')
 

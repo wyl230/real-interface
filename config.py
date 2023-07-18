@@ -278,7 +278,7 @@ def set_service_table(data_dict):
     logger.debug('182 set_id_to_source_and_dest', Status.id_to_source_and_dest)
     data_dict = data_dict.data
     for data in data_dict:
-        logger.info('qwer', get_id_to_source_and_dest(data.insId))
+        logger.info('get_id_to_source_and_dest', get_id_to_source_and_dest(data.insId))
         source_id, dest_id = get_id_to_source_and_dest(data.insId)
         global_var.service_table.append({"ins_id": data.insId, "source_id": source_id, "dest_id": dest_id, "data": [data.throughput, data.aveDelay, data.lossRate]})
     # except Exception as e:
