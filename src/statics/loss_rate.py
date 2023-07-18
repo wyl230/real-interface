@@ -14,7 +14,7 @@ def cal_loss_rate_using_compressed_packed_id(packet_id_list, ins_id, divider=Tru
         packet_id_list = [packet_id for packet_id in packet_id_list if packet_id != -1]
 
     if ins_id in Status.last_compressed_packet_id_list:
-        packet_id_list = Status.last_compressed_packet_id_list + packet_id_list
+        packet_id_list = Status.last_compressed_packet_id_list[ins_id] + packet_id_list
     
     from_list = packet_id_list[::2]
     to_list = packet_id_list[1::2]
